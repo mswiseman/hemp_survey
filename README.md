@@ -232,6 +232,68 @@ box <- make_bbox(long, lat, data = oregon_wash)
 
 ```
 
+## Lets try some stamen maps
+
+```r, exploring maps with for loop
+
+col_year <- c("2021" = "#7d3ec1", "2022"= "#3EC17D") #to match the poster
+
+#since year is being used in a discrete way, it's easier to deal with as a character object
+Hemp_fields_surveyed_2021_22$Year <- as.character(Hemp_fields_surveyed_2021_22$Year)
+
+#lets see how all the map types look with a little for loop.
+
+#################    for loop set up     #################
+
+maptype <- c("terrain-labels", "terrain-lines", "toner", "toner-2011", "toner-background", "toner-hybrid", "toner-lines","toner-lite", "watercolor")
+mylist <- vector("list", length(maptype))
+num <- 0
+
+#for whatever reason I needed to uninstall and reinstall ggmap here... if you get an 'Error in gzfile(file, "rb") : cannot open the connection' then you may need to do the same. Uncomment the next three lines if you need to do this. 
+
+#remove.packages("ggmap")
+#install.packages("ggmap")
+#library(ggmap)
+
+# Previewing different basemaps with our data. 
+
+for(i in maptype ){
+  num <- num+1
+  map <- get_stamenmap(box, zoom = 7, maptype = i)
+  p <- ggmap(map) +
+   xlab("")+
+   ylab("")+
+   geom_jitter() +
+    geom_point(data = Hemp_fields_surveyed_2021_22,
+             aes(x=Long, y=Lat, color=Year)) +
+    scale_color_manual(
+    values = col_year,
+    breaks = c("2021", "2022")) +
+    ggtitle(i) + 
+    theme(
+      plot.title = element_text(color = "orange"), 
+      plot.background = element_rect(color = "black"),
+      panel.border = element_rect(color = "#7d3ec1", fill=NA, size=2),
+      axis.ticks = element_blank(),
+      axis.text = element_blank(),
+      legend.key = element_rect(fill="white"),
+      legend.title = element_blank(),
+    )
+  mylist[[num]] <- p
+}
+ 
+n <- length(mylist)
+nCol <- floor(sqrt(n))
+grid <-do.call("grid.arrange", c(mylist, ncol=nCol))
+
+ggsave("plot3.png", width = 8, height = 11, units = "in", dpi = 300)
+
+#################    end for loop     #################
+
+```
+
+![plot3](images/plot3.png)
+
 The stamen maps are really nice, but for whatever reason you can't overlay geom_sf onto gmap objects that easily (they don't line up because they're different coordinate types). I found a hack online to fix this, hence the next set of code below.
 
 ```r playing with the best looking map
@@ -275,6 +337,10 @@ counties_spec <- ggmap_bbox(gmap)
 ## Okay, lets do some mapping of data. 
 
 ```r, using gmap base and county polygons
+
+#manually define colors for year
+col_year <- c("2021" = "#7d3ec1", "2022"= "#3EC17D") #to match the poster
+
 
 ggmap(counties_spec) + 
   coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
@@ -343,8 +409,7 @@ counties <- subset(counties, grepl("washington|oregon", counties$ID))
 
 ## We can also make maps by just using geometric data
 
-```r 
-```{r using just shape data}
+```r using just shape data
 #I think I prefer the maps with some features
 
 ggplot() +
@@ -364,11 +429,11 @@ geom_polygon(data = oregon_wash,
   scale_fill_manual(
     values = col_year) +
     theme(
-      axis.ticks = element_blank(),
-      axis.text = element_blank(),
-      axis.title = element_blank(),
-      legend.key = element_rect(fill="white"),
-      legend.title = element_blank(),
+      axis.ticks = element_blank(),                 #remove tick marks
+      axis.text = element_blank(),                  #remove lat/long axes labels
+      axis.title = element_blank(),                 #remove axes title
+      legend.key = element_rect(fill="white"),      #fill legend white 
+      legend.title = element_blank(),               #remove legend title 
       panel.background = element_rect(fill="black", color="black"),
       panel.grid = element_blank()
     )
