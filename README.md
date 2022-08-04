@@ -48,9 +48,70 @@ x2022_Hemp_Disease_Survey_Field_Info_and_Data <- read_excel("~2022_Hemp_Disease_
 Hemp_fields_surveyed_2021_22 <- read_excel("~2021-22_Hemp_fields_surveyed.xlsx", sheet= "Sampling_Sites")
 
 #For acreage layer
-hop_acreage <- read_csv("~2017-Slightly-Modified-SASS_Hop_Data.csv")
+Hop_acreage <- read_csv("~2017-Slightly-Modified-SASS_Hop_Data.csv")
 Hop_acreage_2017 <- read_excel("~2021-22_Hemp_fields_surveyed.xlsx", sheet= "Hemp_Hop_ROUGH_Acreage_Data")
 OR_growers <- read_excel("~2022_OR_Growers.xlsx")
 WA_growers <- read_excel("~2022_WA_growers.xlsx")
 x2021_hemp_national_acreage <- read_excel("~2021-Hemp_National_Acreage_Data.xlsx")
 ```
+## Plotting county data
+
+```r county data
+# set the state and county names of interest
+state_names <- c("Oregon", "Washington")
+
+# get COUNTY data for a given state
+counties_spec <- us_counties(resolution = "high", states = state_names)
+
+# get STATE data
+OR_WA_2<-us_states(resolution = "high", states = state_names) %>%
+  st_transform(crs = 4326)
+
+# get range of lat/longs from counties for mapping and river function
+mapRange1 <- c(range(st_coordinates(counties_spec)[,1]),range(st_coordinates(counties_spec)[,2]))
+
+ggplot() + 
+  geom_sf(data=OR_WA_2, color = "gray30", lwd=2, fill=NA) +
+  geom_sf(data=counties_spec, fill = NA, show.legend = F, color="gray50", lwd=0.4) +
+  theme_bw()
+```
+## Using TidyUSDA
+TidyUSDA is a pretty nifty library that enables quick downloading of USDA-SASS data. To see what things you can load in, you'll have to check out the USDA-NASS [quick stats website](https://quickstats.nass.usda.gov/). Unfortunately if you're like me and **running an M1 mac** there are mapping features that aren't yet supported in TidyUSDA, so keep that in mind. To get a USDA-NASS API key, fill out the quick form [here](https://quickstats.nass.usda.gov/api). 
+
+
+More info on TidyUSDA [here](https://github.com/bradlindblad/tidyUSDA). 
+
+
+```{r USDA data}
+# uncomment below to get a quick tutorial of the library.
+#vignette("using_tidyusda")  <- tutorial 
+
+# enter your API key in the quotation marks below. 
+key <- ''  
+
+# to see all available categories
+tidyUSDA::allCategory %>% head()
+
+# lets look at the last available county data for hops (2017)
+hop_county_harvest <- tidyUSDA::getQuickstat(
+  sector= NULL,
+  group= NULL,
+  commodity= 'HOPS',
+  category= NULL,
+  domain='TOTAL',
+  county= NULL,
+  key = key,
+  program = NULL,
+  data_item = "HOPS - ACRES HARVESTED",
+  geographic_level = 'COUNTY',
+  year = "2017",
+  state = c('WASHINGTON','OREGON'),
+  geometry = TRUE,
+  lower48 = TRUE, 
+  weighted_by_area = FALSE)
+
+# drop any counties that have null values
+hop_county_harvest <- hop_county_harvest %>%
+  drop_na(Value)
+  
+  ```
