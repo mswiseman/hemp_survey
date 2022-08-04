@@ -9,7 +9,7 @@ date: '2022-08-04'
 Learning R can be hard. I'm uploading this code in hopes of helping you learn; I'm no expert and I'm not a very efficient coder, but I hope you will find it helpful regardless. 
 
 ## Load necessary libraries
-If you haven't installed any of these libraries, remember you can typically install them through the `install.packages('packagenamehere')' command. 
+If you haven't installed any of these libraries, remember you can typically install them through the `install.packages('packagenamehere')` command. 
 
 ```r setup
 library(tidyverse)          # manipulating and plotting data
