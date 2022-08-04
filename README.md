@@ -292,7 +292,7 @@ ggsave("plot3.png", width = 8, height = 11, units = "in", dpi = 300)
 
 ```
 
-<img align="center" width="500" alt="Plot3" src="https://raw.githubusercontent.com/mswiseman/mswiseman.github.io/master/assets/images/plot3.png" class="padding"/>
+<img align="center" width="500" alt="Plot3" src="https://raw.githubusercontent.com/mswiseman/hemp_survey/images/plot3.png" class="padding"/>
 
 
 ![plot3](images/plot3.png)
