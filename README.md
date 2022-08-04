@@ -11,6 +11,10 @@ Learning R can be hard. I'm uploading this code in hopes of helping you learn; I
 ## Load necessary libraries
 If you haven't installed any of these libraries, remember you can typically install them through the `install.packages('packagenamehere')` command. 
 
+* For notes on theme components, see [here](https://ggplot2.tidyverse.org/reference/theme.html).
+* Map tips [here](https://cran.r-project.org/web/packages/osmplotr/vignettes/basic-maps.html)
+* Custom bounding boxes [here](https://bigquerygeoviz.appspot.com/)
+
 ```r setup
 library(tidyverse)          # manipulating and plotting data
 library(usmap)              # preloaded us maps
@@ -190,4 +194,5 @@ WA_grow_abb  <- WA_growers[,38:40]
 
 # bind by rows to make one df
 PNW_growers <- rbind(OR_grow_abb, WA_grow_abb)
-  
+
+
