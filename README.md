@@ -388,7 +388,7 @@ ggmap(counties_spec) +
 ggsave("plot4.png", width = 8, height = 11, units = "in", dpi = 300)
 ```
 
-<img align="center" width="600" alt="Plot3" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot4.png?raw=true" class="padding"/>
+<img align="center" width="600" alt="Plot4" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot4.png?raw=true" class="padding"/>
 
 ```r converting df to geom_sf
 
@@ -409,7 +409,7 @@ counties <- subset(counties, grepl("washington|oregon", counties$ID))
 
 ## We can also make maps by just using geometric data
 
-```r using just shape data
+```r, using just shape data
 ggplot() +
 geom_polygon(data = oregon_wash,
              aes(x = long,
@@ -436,8 +436,8 @@ geom_polygon(data = oregon_wash,
       panel.grid = element_blank()
     )
     
-    ```
-<img align="center" width="600" alt="Plot3" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot5.png?raw=true" class="padding"/>
+ ```
+<img align="center" width="600" alt="Plot5" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot5.png?raw=true" class="padding"/>
 
     
 ```r, density
