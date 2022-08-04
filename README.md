@@ -54,6 +54,37 @@ OR_growers <- read_excel("~2022_OR_Growers.xlsx")
 WA_growers <- read_excel("~2022_WA_growers.xlsx")
 x2021_hemp_national_acreage <- read_excel("~2021-Hemp_National_Acreage_Data.xlsx")
 ```
+## Looking at hemp production by state
+Download the [2021 hemp survey results](https://usda.library.cornell.edu/concern/publications/gf06h2430) and remove the spaces and special symbols ($ / , etc.) in the headers to make it more R friendly. You can do this in R, but I find ctrl+f and then replace to be super fast in excel. I replaced all spaces with underscores and wrote out symbols when present. 
+
+```{r hemp usda}
+hemp_open_production <- x2021_hemp_national_acreage %>%
+  filter(Data_Item == "IN_THE_OPEN_UTILIZED_FLORAL_PRODUCTION_MEASURED_IN_DOLLARS")
+
+# You might toy around with different breaks... I wasn't seeing enough contrast, so I increased the contrast with these breaks. 
+my_breaks = c(0, 5000000, 10000000, 50000000, 200000000)
+
+# Use USmap to quickly plot out the state values
+plot_usmap(data = hemp_open_production,
+           values = "Value",      # Value in this case is in dollars
+           labels = TRUE,         # text labels
+           label_color = "white", 
+           face = "bold", 
+           alpha = 0.8) +         # alpha = transparancy
+  ggtitle("2021 Total Production Value of Open Grown Hemp Flower By State") +
+  scale_fill_gradient2("Production Value \n (Dollars)",
+                       low = "#440154",                 # purple
+                       mid = "#279a86",                 # blue-green
+                       high = "#fce724",                # yellow
+                       na.value = "grey80",
+                       midpoint = 100000000) +
+  theme(
+    legend.background = element_blank(),
+    legend.position = c(0.9,0))
+
+```
+![plot2.png](images/plot2.png)
+
 ## Plotting county data
 
 ```r county data
@@ -70,17 +101,19 @@ OR_WA_2<-us_states(resolution = "high", states = state_names) %>%
 # get range of lat/longs from counties for mapping and river function
 mapRange1 <- c(range(st_coordinates(counties_spec)[,1]),range(st_coordinates(counties_spec)[,2]))
 
+# check quickly
 ggplot() + 
   geom_sf(data=OR_WA_2, color = "gray30", lwd=2, fill=NA) +
   geom_sf(data=counties_spec, fill = NA, show.legend = F, color="gray50", lwd=0.4) +
   theme_bw()
 ```
+[plot1](images/plot1.png)
+
+
 ## Using TidyUSDA
 TidyUSDA is a pretty nifty library that enables quick downloading of USDA-SASS data. To see what things you can load in, you'll have to check out the USDA-NASS [quick stats website](https://quickstats.nass.usda.gov/). Unfortunately if you're like me and **running an M1 mac** there are mapping features that aren't yet supported in TidyUSDA, so keep that in mind. To get a USDA-NASS API key, fill out the quick form [here](https://quickstats.nass.usda.gov/api). 
 
-
 More info on TidyUSDA [here](https://github.com/bradlindblad/tidyUSDA). 
-
 
 ```{r USDA data}
 # uncomment below to get a quick tutorial of the library.
@@ -113,5 +146,48 @@ hop_county_harvest <- tidyUSDA::getQuickstat(
 # drop any counties that have null values
 hop_county_harvest <- hop_county_harvest %>%
   drop_na(Value)
-  
+
+# need to rename a column for later
+q <- colnames(hop_county_harvest)
+q[1] <- "fips"
+colnames(hop_county_harvest) <- q
+hop_county_harvest$fips <- as.integer(hop_county_harvest$fips)
+
   ```
+  
+ ## Process address data
+ For the privacy of growers, I won't like the excel spreadsheet with addresses, though it is available to the public. 
+ 
+ ```{r process hemp addresses}
+# insert your google api key
+register_google(key = '')  # you have to sign up for this. 
+
+# Function to add geo data will append your original df
+
+geocoded <- data.frame(stringsAsFactors = FALSE) 
+for(i in 1:nrow(OR_growers))
+{
+  result <- geocode(OR_growers$`Address`[i], output = "latlona", source = "goog")
+  OR_growers$lon[i] <- as.numeric(result[1])
+  OR_growers$lat[i] <- as.numeric(result[2])
+  OR_growers$geoAddress[i] <- as.character(result[3])
+}
+
+# Now add geo data for Washington growers
+
+geocoded <- data.frame(stringsAsFactors = FALSE) 
+for(i in 1:nrow(WA_growers))
+{
+  result <- geocode(WA_growers$`Address`[i], output = "latlona", source = "goog")
+  WA_growers$lon[i] <- as.numeric(result[1])
+  WA_growers$lat[i] <- as.numeric(result[2])
+  WA_growers$geoAddress[i] <- as.character(result[3])
+}
+
+# Combine the relevent columns into new dataframe
+OR_grow_abb <- OR_growers[,20:22]
+WA_grow_abb  <- WA_growers[,38:40]
+
+# bind by rows to make one df
+PNW_growers <- rbind(OR_grow_abb, WA_grow_abb)
+  
