@@ -35,6 +35,8 @@ library(raster)             # reading spacial data
 library(tidyUSDA)           # auto downloading data from USDA-SASS
 library(rgdal)              # bindings to the 'Geospatial' Data Abstraction Library 
 library(USAboundaries)      # loadable maps
+library(MASS)
+
 ```
 
 ## Load data
@@ -268,9 +270,6 @@ counties_spec <- ggmap_bbox(gmap)
 # hemp grower locations
 (PNW_grower_sites <- st_as_sf(PNW_growers, coords = c("lon", "lat"), 
     crs = 4326, agr = "constant"))
-
-states <- st_as_sf(map("state", plot = FALSE, fill = TRUE))
-
 ```
 
 ## Okay, lets do some mapping of data. 
@@ -321,4 +320,81 @@ ggmap(counties_spec) +
 
 
 ggsave("plot4.png", width = 8, height = 11, units = "in", dpi = 300)
+```
+
+![plot4](images/plot4.png)
+
+```r
+
+states <- st_as_sf(map("state", plot = FALSE, fill = TRUE))
+head(states)
+
+# switch to title case
+states$ID <- toTitleCase(states$ID)
+
+or_wa <- states %>%
+  filter(ID %in% c("Oregon","Washington"))
+  
+or_wa <- cbind(or_wa, st_coordinates(st_centroid(or_wa)))
+counties <- st_as_sf(map("county", plot = FALSE, fill = TRUE))
+counties <- subset(counties, grepl("washington|oregon", counties$ID))
+
+```
+
+## We can also make maps by just using geometric data
+
+```r 
+```{r using just shape data}
+#I think I prefer the maps with some features
+
+ggplot() +
+geom_polygon(data = oregon_wash,
+             aes(x = long,
+                 y = lat,
+                 group = group),
+             fill = "white",
+             color = "darkgray") + 
+  coord_quickmap() +
+  geom_point(data = Hemp_fields_surveyed_2021_22,
+             aes(x = Long,
+                 y = Lat,
+                 fill = Year),
+             shape = 21,
+             color = "black")+
+  scale_fill_manual(
+    values = col_year) +
+    theme(
+      axis.ticks = element_blank(),
+      axis.text = element_blank(),
+      axis.title = element_blank(),
+      legend.key = element_rect(fill="white"),
+      legend.title = element_blank(),
+      panel.background = element_rect(fill="black", color="black"),
+      panel.grid = element_blank()
+    )
+    
+    ```
+    ![plot5.png](images/plot5.png)
+    
+```r, density
+
+# get density polygons
+dens <- contourLines(
+    kde2d(Species_comp_and_sampling_time_drop_June_jittered$Long, Species_comp_and_sampling_time_drop_June_jittered$Lat, 
+          lims=c(expand_range(range(Species_comp_and_sampling_time_drop_June_jittered$Long), add=0.5),
+                 expand_range(range(Species_comp_and_sampling_time_drop_June_jittered$Lat), add=0.5))))
+
+# this will be the color aesthetic mapping
+Species_comp_and_sampling_time_drop_June_jittered$Density <- 0
+
+# density levels go from lowest to highest, so iterate over the
+# list of polygons (which are in level order), figure out which
+# points are in that polygon and assign the level to them
+
+for (i in 1:length(dens)) {
+  tmp <- point.in.polygon(Species_comp_and_sampling_time_drop_June_jittered$Long, Species_comp_and_sampling_time_drop_June_jittered$Lat, dens[[i]]$x, dens[[i]]$y)
+  Species_comp_and_sampling_time_drop_June_jittered$Density[which(tmp==1)] <- dens[[i]]$level
+}
+
+
 ```
