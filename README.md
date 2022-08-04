@@ -119,7 +119,7 @@ TidyUSDA is a pretty nifty library that enables quick downloading of USDA-SASS d
 
 More info on TidyUSDA [here](https://github.com/bradlindblad/tidyUSDA). 
 
-```{r USDA data}
+```{r TidyUSDA data}
 # uncomment below to get a quick tutorial of the library.
 #vignette("using_tidyusda")  <- tutorial 
 
@@ -160,14 +160,16 @@ hop_county_harvest$fips <- as.integer(hop_county_harvest$fips)
   ```
   
  ## Process address data
- For the privacy of growers, I won't like the excel spreadsheet with addresses, though it is available to the public. 
+ For the privacy of growers, I won't link the excel spreadsheet with addresses, though it is available to the public. 
+ 
+ When using address data, you have to convert it to lat/long before mapping it with a lot of the R mapping packages. In the box below I'm feeding in address data and the Google API is returning lat, long data in a new column. For a google API key, sign up [here](https://developers.google.com/maps/documentation/javascript/get-api-key). 
  
  ```{r process hemp addresses}
+ 
 # insert your google api key
-register_google(key = '')  # you have to sign up for this. 
+register_google(key = '')     # you have to sign up for this. 
 
 # Function to add geo data will append your original df
-
 geocoded <- data.frame(stringsAsFactors = FALSE) 
 for(i in 1:nrow(OR_growers))
 {
@@ -195,4 +197,128 @@ WA_grow_abb  <- WA_growers[,38:40]
 # bind by rows to make one df
 PNW_growers <- rbind(OR_grow_abb, WA_grow_abb)
 
+```
+## Base map
+Maps are built in layers with the base layer typically being land/water. 
 
+```r, creating base map
+#use the map packages to make a dataframe of the polygons in map_data("state")
+states <- map_data("state")
+
+
+#Now we want to filter out a polygon from our states dataframe for Oregon
+oregon_wash <- states %>%
+  filter(region %in% c("oregon","washington"))
+
+gcounty <- map_data("county") %>%
+  filter(region %in% c("oregon", "washington"))
+
+
+fipstab <-
+    transmute(maps::county.fips, fips, county = sub(":.*", "", polyname)) %>%
+    unique() %>%
+    separate(county, c("region", "subregion"), sep = ",")
+
+gcounty <- left_join(gcounty, fipstab, c("region", "subregion"))
+
+counties <- st_as_sf(map("county", plot = FALSE, fill = TRUE))
+counties <- subset(counties, grepl("florida", counties$ID))
+counties$area <- as.numeric(st_area(counties))
+
+#bounding box for the area
+box <- make_bbox(long, lat, data = oregon_wash)
+
+```
+
+The stamen maps are really nice, but for whatever reason you can't overlay geom_sf onto gmap objects that easily (they don't line up because they're different coordinate types). I found a hack online to fix this, hence the next set of code below.
+
+```r playing with the best looking map
+gmap <- get_stamenmap(box, zoom = 7, maptype = "toner-background")
+
+counties_spec_3857 <- st_transform(counties_spec, 3857) 
+
+ggmap_bbox <- function(map) {
+  if (!inherits(map, "ggmap")) stop("map must be a ggmap object")
+  # Extract the bounding box (in lat/lon) from the ggmap to a numeric vector, and set the names to what sf::st_bbox expects:
+  map_bbox <- setNames(unlist(attr(map, "bb")), 
+                       c("ymin", "xmin", "ymax", "xmax"))
+  
+  # Coonvert the bbox to an sf polygon, transform it to 3857, and convert back to a bbox (convoluted, but it works)
+  bbox_3857 <- st_bbox(st_transform(st_as_sfc(st_bbox(map_bbox, crs = 4326)), 3857))
+  
+  # Overwrite the bbox of the ggmap object with the transformed coordinates 
+  attr(map, "bb")$ll.lat <- bbox_3857["ymin"]
+  attr(map, "bb")$ll.lon <- bbox_3857["xmin"]
+  attr(map, "bb")$ur.lat <- bbox_3857["ymax"]
+  attr(map, "bb")$ur.lon <- bbox_3857["xmax"]
+  map
+}
+counties_spec <- ggmap_bbox(gmap)
+
+
+```
+## Converting ojbects to geom_sf objects
+
+```r geom sf conversion
+
+# make into geom_sf objects
+(Fields_surveyed <- st_as_sf(Hemp_fields_surveyed_2021_22, coords = c("Long", "Lat"), 
+    crs = 4326, agr = "constant"))
+
+# hemp grower locations
+(PNW_grower_sites <- st_as_sf(PNW_growers, coords = c("lon", "lat"), 
+    crs = 4326, agr = "constant"))
+
+states <- st_as_sf(map("state", plot = FALSE, fill = TRUE))
+
+```
+
+## Okay, lets do some mapping of data. 
+
+```r, using gmap base and county polygons
+
+ggmap(counties_spec) + 
+  coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
+  geom_sf(data = counties_spec_3857, inherit.aes = FALSE, fill = NA, color = "gray90") +
+  geom_sf(data = county_and_yield_data,   
+          aes(fill = as.numeric(Value),
+       geometry = geometry), inherit.aes = FALSE) +
+  #scale_fill_viridis_c()+
+  scale_fill_gradient("Acres of Hops Harvested", 
+                      low = "#F3E6DA",
+                      high = "#C17D3E",
+                      space = "Lab",
+                      breaks = my_breaks,
+                      labels = my_breaks,
+                      na.value = "grey90",
+                      trans="log",
+                      guide = "colourbar",
+                      aesthetics = "fill")  +
+  new_scale_fill() +
+  geom_sf(data = PNW_grower_sites,                       # cannabis growers
+          aes(geometry = geometry),
+          color = "black",
+          fill = "gray",
+          size = 3,
+          shape = 21,
+          inherit.aes = FALSE) +
+  geom_sf(data = Fields_surveyed,                          # sampling locations
+          aes(geometry = geometry,
+              color = Year), #fill = Year),
+          fill = "white",
+          #colour="gray30",
+          size = 3,
+          shape = 21, 
+          alpha = 0.9,
+          inherit.aes = FALSE) +
+  scale_color_manual(values = col_year,
+    breaks = c("2021", "2022")) +
+  theme(legend.key=element_blank(),         # removes gray box behind symbols
+        legend.position = "right",
+        axis.title = element_blank(),       # removes "lat" and "long" labels
+        axis.ticks = element_blank(),
+        axis.text = element_blank())        # removes "lat" and "long" values
+
+
+ggsave("plot4.png", width = 8, height = 11, units = "in", dpi = 300)
+```
