@@ -96,6 +96,7 @@ plot_usmap(data = hemp_open_production,
     legend.position = c(0.9,0))
 
 ```
+
 <img align="center" width="600" alt="Plot2" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot2.png?raw=true" class="padding"/>
 ## Plotting county data
 
@@ -120,6 +121,7 @@ ggplot() +
   theme_bw()
 ```
 <img align="center" width="600" alt="Plot1" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot1.png?raw=true" class="padding"/>
+
 ## Using TidyUSDA
 TidyUSDA is a pretty nifty library that enables quick downloading of USDA-SASS data. To see what things you can load in, you'll have to check out the USDA-NASS [quick stats website](https://quickstats.nass.usda.gov/). Unfortunately if you're like me and **running an M1 mac** there are mapping features that aren't yet supported in TidyUSDA, so keep that in mind. To get a USDA-NASS API key, fill out the quick form [here](https://quickstats.nass.usda.gov/api). 
 
@@ -393,7 +395,9 @@ ggmap(counties_spec) +
 
 ggsave("plot4.png", width = 8, height = 11, units = "in", dpi = 300)
 ```
+
 <img align="center" width="600" alt="Plot4" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot4.png?raw=true" class="padding"/>
+
 ```r converting df to geom_sf
 
 states <- st_as_sf(map("state", plot = FALSE, fill = TRUE))
@@ -410,7 +414,6 @@ counties <- st_as_sf(map("county", plot = FALSE, fill = TRUE))
 counties <- subset(counties, grepl("washington|oregon", counties$ID))
 
 ```
-
 ## We can also make maps by just using geometric data
 
 ```r, using just shape data
@@ -442,6 +445,7 @@ geom_polygon(data = oregon_wash,
     
  ```
 <img align="center" width="600" alt="Plot5" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot5.png?raw=true" class="padding"/>    
+
 ```r, density
 
 # get density polygons
@@ -593,12 +597,9 @@ ggsave("plot6.png",
        dpi = 300)
 
 ```
-
-
 ## virulence factors map
 
 ```{r highlighting virulence factors}
-
 
 qmplot(
   Long,
