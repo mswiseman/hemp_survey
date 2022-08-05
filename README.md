@@ -4,7 +4,7 @@ author: "Michele Wiseman"
 date: '2022-08-04'
 ---
 
-# Code for figures and maps from our 2021 Hemp Powdery Milew survey
+# Code for figures and maps from our 2021 Hemp Powdery Milew Survey
 
 Learning R can be hard. I'm uploading this code in hopes of helping you learn; I'm no expert and I'm not a very efficient coder, but I hope you will find it helpful regardless. 
 
@@ -43,22 +43,29 @@ library(MASS)
 *You will have to change your path*
 
 ```r
-#For disease incidence and taxa layers
+# For disease incidence and taxa layers
 Pamb_Pmac_combined_PCR_Positives_Summary_2021 <- read_excel("~2021-Pamb_Pmac_combined_PCR_Positives_Summary.xlsx")
 x2022_OR_Raw_Data <- read_excel("~2022_Hemp_Disease_Survey_Field_Info.xlsx", sheet="OR Raw Data")
 x2022_WA_Raw_Data <- read_excel("~2022_Hemp_Disease_Survey_Field_Info.xlsx", sheet="WA Raw Data")
 x2021_datasheet <- read_excel("~2021_Hemp_PM_Survey_Data.xlsx")
 
-#For sampling sites layer
+# For sampling sites layer
 x2022_Hemp_Disease_Survey_Field_Info_and_Data <- read_excel("~2022_Hemp_Disease_Survey_Field_Info.xlsx")
 Hemp_fields_surveyed_2021_22 <- read_excel("~2021-22_Hemp_fields_surveyed.xlsx", sheet= "Sampling_Sites")
 
-#For acreage layer
+# For acreage layer
 Hop_acreage <- read_csv("~2017-Slightly-Modified-SASS_Hop_Data.csv")
 Hop_acreage_2017 <- read_excel("~2021-22_Hemp_fields_surveyed.xlsx", sheet= "Hemp_Hop_ROUGH_Acreage_Data")
 OR_growers <- read_excel("~2022_OR_Growers.xlsx")
 WA_growers <- read_excel("~2022_WA_growers.xlsx")
 x2021_hemp_national_acreage <- read_excel("~2021-Hemp_National_Acreage_Data.xlsx")
+
+
+# Slimming columns to save memory
+
+x2021_datasheet_abb <- x2021_datasheet[,c(1:3,6:7,9:13)]
+
+
 ```
 ## Looking at hemp production by state
 Download the [2021 hemp survey results](https://usda.library.cornell.edu/concern/publications/gf06h2430) and remove the spaces and special symbols ($ / , etc.) in the headers to make it more R friendly. You can do this in R, but I find ctrl+f and then replace to be super fast in excel. I replaced all spaces with underscores and wrote out symbols when present. 
@@ -236,7 +243,11 @@ box <- make_bbox(long, lat, data = oregon_wash)
 
 ```r, exploring maps with for loop
 
-col_year <- c("2021" = "#7d3ec1", "2022"= "#3EC17D") #to match the poster
+# custom colors and shapes to be used in the maps and figures. 
+col_year <- c("2021" = "#7d3ec1", "2022"= "#3EC17D")
+col_month <- c("July"= "#bf642f", "August"= "#242c31","September"="#938a5d", "October"="#474c33") 
+col_species<- c("G. ambrosiae" = "#E0614E", "P. macularis"="#000000")
+shape_species <- c("G. ambrosiae" = 21, "P. macularis" = 24)
 
 #since year is being used in a discrete way, it's easier to deal with as a character object
 Hemp_fields_surveyed_2021_22$Year <- as.character(Hemp_fields_surveyed_2021_22$Year)
@@ -459,6 +470,180 @@ for (i in 1:length(dens)) {
   tmp <- point.in.polygon(Species_comp_and_sampling_time_drop_June_jittered$Long, Species_comp_and_sampling_time_drop_June_jittered$Lat, dens[[i]]$x, dens[[i]]$y)
   Species_comp_and_sampling_time_drop_June_jittered$Density[which(tmp==1)] <- dens[[i]]$level
 }
+```
+## Looking at species ID results
+
+```r
+# subsampling necessary colnames to free memory (wider df = more memory needs)
+Positive_samples_abb <- Pamb_Pmac_combined_PCR_Positives_Summary_2021[,c(3:4,10:27)]   
+Species_comp_and_sampling_time <-  Positive_samples_abb[,(1:10)] %>%
+  distinct()            # I want to make sure there are no duplicates
+
+# just 2021 for now
+Fields_surveyed_2021 <- Fields_surveyed %>%              
+  filter(Year == "2021")
+
+# make into geom_sf objects
+(Species_comp_and_sampling_time_drop_June_jittered2 <- st_as_sf(Species_comp_and_sampling_time_drop_June_jittered, coords = c("Long", "Lat"), 
+    crs = 4326, agr = "constant"))
+    
+ ```
+ 
+ ## Incidence and severity
+ 
+ ```r creating disease incidence and severity df
+ 
+# subsamples to save on memory
+x2021_datasheet_abb <- x2021_datasheet[,c(1:3,6:7,9:13)]
+
+# make columns for month and year so I can facet by month (more relevant for hop growers)
+x2021_datasheet_abb2 <- x2021_datasheet_abb %>%
+  separate("Sampling_Date", sep="-", into = c("Year", "Month", "Day")) %>%
+  select(-Day) %>%
+  mutate(Perc_mildew = (PM_per_ten_leaves/10)*100) %>%
+  drop_na(Perc_mildew)
+
+Incidence_and_severity <-x2021_datasheet_abb2 %>%
+  group_by(Year, Month, Lat, Long, Field_Name) %>%
+  summarize(
+    Average_severity = mean(Perc_mildew),
+    N_all_plants = length(Perc_mildew == 0),
+    N_mildew_plants = sum(Perc_mildew > 0),
+    Disease_incidence = (N_mildew_plants/N_all_plants)*100)
+
+# make into geom_sf objects
+(Incidence_and_severity2 <- st_as_sf(Incidence_and_severity, coords = c("Long", "Lat"), crs = 4326, agr = "constant")) 
+ ```
+ 
+ 
+ ```r prepping another base map
+
+PNW_growers2 <- PNW_growers[-1,]
+
+df[-c(row_index_1, row_index_2),]
+OR_growers2 <- OR_grow_abb
+colnames(PNW_growers2) <- c("Long","Lat","Street")
+colnames(OR_growers2) <- c("Long","Lat","Street")
+
+# Oddly enough there was a nevada grower... so I had to filter it out
+PNW_growers2 <- PNW_growers2 %>%
+  filter(!Lat < 42)
+  
+```
+
+## Visualizing progression of disease
+### Current map
+
+```{r visualizing progression of disease}
+# reload jittered data
+Species_comp_and_sampling_time_drop_June_jittered <- read_xlsx("Desktop/Hemp PM Work/Species_comp_and_sampling_time_drop_June.xlsx")
+
+col_sp2<- c("G. ambrosiae" = "#7d3ec1", "P. macularis"= "#3EC17D") #to match the poster
+col_V6 <-  c("." = "#7d3ec1",
+             "Non-V6"= "#3EC17D",
+             "V6" = "#fce724",
+             "Both" = "#36668c")
+
+jitter <- position_jitter(width = 0.05, height = 0.05)
+jitter2 <- position_jitter(width = 0.1, height = 0.1)
+shape_species2 <- c("G. ambrosiae" = 21, "P. macularis" = 24)
+shape_V6 <- c("V6" = 21, "Non-V6" = 22, "Both" = 23, "." = 24)
+
+# makes sure your months are in the right order
+Species_comp_and_sampling_time_drop_June_jittered$Month_collected <- factor(Species_comp_and_sampling_time_drop_June_jittered$Month_collected, levels = c("July", "August", "September", "October"))
+
+qmplot(
+  Long,
+  Lat,
+  data = Species_comp_and_sampling_time_drop_June_jittered,
+  geom = "blank",
+  maptype = "toner", 
+  legend = "bottomright",
+  zoom = 7 ) +
+  stat_density_2d(aes(fill = ..level..),
+                  geom = "polygon",
+                  alpha = .3,
+                  data = Species_comp_and_sampling_time_drop_June_jittered, contour_var = "density") +
+  scale_fill_viridis_c() +
+  facet_grid(~ Month_collected) +                                                # facet by month
+  guides(fill = guide_legend(title = "Level")) +
+  new_scale_fill() +                                                             # allows two fill scales
+  geom_point(data = Species_comp_and_sampling_time_drop_June_jittered ,
+             aes(
+             x = Long,
+             y = Lat,
+             fill = Target,
+             shape = Target),
+             size = 2,
+             alpha = 0.8,
+             color = "black",
+             position = jitter) +
+  scale_viridis_d() +
+  scale_shape_manual(values = shape_species2) +
+  guides(shape = guide_legend(override.aes = list(size = 5))) +
+  theme(panel.spacing  = unit(.05, "lines"),
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        strip.background = element_rect(color = "black", size = 1, fill = "black"), 
+        legend.background = element_rect(fill=alpha('black')),
+        legend.key=element_blank(),
+        legend.box = "horizontal",
+        legend.position = "bottom",
+        legend.text.align = 1,
+        legend.text = element_text(size=24, color = "white", face="bold"),
+        legend.title = element_text(size=28, face = "bold", color = "white"),
+        strip.text = element_text(face="bold", size=32, color = "white"),
+        legend.margin = margin(c(2,2,2,2)))
+
+#need to specify the scale so you don't cut the title off
+ggsave("plot6.png",
+        width = 11,
+       height = 8,
+       units = "in",
+       dpi = 300)
+
+```
 
 
+## virulence factors map
+
+```{r highlighting virulence factors}
+
+
+qmplot(
+  Long,
+  Lat,
+  data = PNW_growers2,
+  geom = "blank",
+  maptype = "toner", 
+  legend = "bottomright",
+  zoom = 7 ) +
+  #new_scale_fill() +
+  geom_point(data= Species_comp_and_sampling_time_drop_June_jittered,
+             aes(x= Long, y= Lat, shape = Target, fill = V6), 
+             color = "black",
+             size = 2,
+             alpha = 0.7,
+             position = jitter2) +
+  scale_fill_manual(values = col_V6) +
+  scale_shape_manual(values = shape_species2) + 
+  guides(shape = guide_legend(override.aes = list(size = 5))) +
+  theme(panel.spacing  = unit(.05, "lines"),
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        strip.background = element_rect(color = "black", size = 1, fill = "black"), 
+        legend.background = element_rect(fill=alpha('black')),
+        legend.key=element_blank(),
+        legend.box = "horizontal",
+        legend.position = "bottom",
+        legend.text.align = 1,
+        legend.text = element_text(size=24, color = "white", face="bold"),
+        legend.title = element_text(size=28, face = "bold", color = "white"),
+        strip.text = element_text(face="bold", size=32, color = "white"),
+        legend.margin = margin(c(2,2,2,2)))
+
+#need to specify the scale so you don't cut the title off
+ggsave("plot9.png",
+        width = 11,
+       height = 8,
+       units = "in",
+       dpi = 300)
 ```
