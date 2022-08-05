@@ -304,6 +304,7 @@ ggsave("plot3.png", width = 8, height = 11, units = "in", dpi = 300)
 
 ```
 <img align="center" width="600" alt="Plot3" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot3.png?raw=true" class="padding"/>
+
 The stamen maps are really nice, but for whatever reason you can't overlay geom_sf onto gmap objects that easily (they don't line up because they're different coordinate types). I found a hack online to fix this, hence the next set of code below.
 
 ```r playing with the best looking map
@@ -331,7 +332,7 @@ counties_spec <- ggmap_bbox(gmap)
 
 
 ```
-## Converting ojbects to geom_sf objects
+## Converting dfs to geom_sf objects
 
 ```r geom sf conversion
 
@@ -400,6 +401,8 @@ ggsave("plot4.png", width = 8, height = 11, units = "in", dpi = 300)
 
 <img align="center" width="600" alt="Plot4" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot4.png?raw=true" class="padding"/>
 
+## More map prep
+
 ```r converting df to geom_sf
 
 states <- st_as_sf(map("state", plot = FALSE, fill = TRUE))
@@ -448,6 +451,8 @@ geom_polygon(data = oregon_wash,
  ```
 <img align="center" width="600" alt="Plot5" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot5.png?raw=true" class="padding"/>    
 
+## Making density data
+
 ```r, density
 
 # get density polygons
@@ -468,56 +473,15 @@ for (i in 1:length(dens)) {
   Species_comp_and_sampling_time_drop_June_jittered$Density[which(tmp==1)] <- dens[[i]]$level
 }
 ```
-## Looking at species ID results
-
-```r
-# subsampling necessary colnames to free memory (wider df = more memory needs)
-Positive_samples_abb <- Pamb_Pmac_combined_PCR_Positives_Summary_2021[,c(3:4,10:27)]   
-Species_comp_and_sampling_time <-  Positive_samples_abb[,(1:10)] %>%
-  distinct()            # I want to make sure there are no duplicates
-
-# just 2021 for now
-Fields_surveyed_2021 <- Fields_surveyed %>%              
-  filter(Year == "2021")
-
-# make into geom_sf objects
-(Species_comp_and_sampling_time_drop_June_jittered2 <- st_as_sf(Species_comp_and_sampling_time_drop_June_jittered, coords = c("Long", "Lat"), 
-    crs = 4326, agr = "constant"))
-    
- ```
- 
- ## Incidence and severity
- 
- ```r creating disease incidence and severity df
- 
-# subsamples to save on memory
-x2021_datasheet_abb <- x2021_datasheet[,c(1:3,6:7,9:13)]
-
-# make columns for month and year so I can facet by month (more relevant for hop growers)
-x2021_datasheet_abb2 <- x2021_datasheet_abb %>%
-  separate("Sampling_Date", sep="-", into = c("Year", "Month", "Day")) %>%
-  select(-Day) %>%
-  mutate(Perc_mildew = (PM_per_ten_leaves/10)*100) %>%
-  drop_na(Perc_mildew)
-
-Incidence_and_severity <-x2021_datasheet_abb2 %>%
-  group_by(Year, Month, Lat, Long, Field_Name) %>%
-  summarize(
-    Average_severity = mean(Perc_mildew),
-    N_all_plants = length(Perc_mildew == 0),
-    N_mildew_plants = sum(Perc_mildew > 0),
-    Disease_incidence = (N_mildew_plants/N_all_plants)*100)
-
-# make into geom_sf objects
-(Incidence_and_severity2 <- st_as_sf(Incidence_and_severity, coords = c("Long", "Lat"), crs = 4326, agr = "constant")) 
- ```
- 
+## Making a bounding box around all the PNW growers.
  
  ```r prepping another base map
 
 PNW_growers2 <- PNW_growers[-1,]
 
 OR_growers2 <- OR_grow_abb
+
+# change colnames to be the same in acase we want to merge them
 colnames(PNW_growers2) <- c("Long","Lat","Street")
 colnames(OR_growers2) <- c("Long","Lat","Street")
 
@@ -528,8 +492,6 @@ PNW_growers2 <- PNW_growers2 %>%
 ```
 
 ## Virulence factors map
-
-I'll admit that this next map I redid the legend in canva because I couldn't quite get it the way I wanted to. Below the code is the R version and then below that is the canva edited version. 
 
 ```r, highlighting virulence factors
 
@@ -571,11 +533,13 @@ ggsave("plot6.png",
        units = "in",
        dpi = 300)
 ```
-Raw from R
+I'll admit that this next map I redid the legend in canva because I couldn't quite get it the way I wanted to. 
+
+**Raw from R**
 
 ![plot6](images/plot6.png)
 
-Edited in Canva
+**Edited in Canva**
 
 ![plot6-2](images/plot6-2.png)
 
@@ -733,4 +697,71 @@ ggsave("plot8-2.png",
   
   It's not perfect, but it's pretty good. If I'd have used that graph then I would have edited the labels with Canva. 
   
-  
+ ## Pie chart
+ 
+ Pie charts are essentially bar charts that have one additional setting (`coord_polar("y", start=0)`); alas, they're pretty easy to make. However, it's important to mention that data shows that pie charts are often not the best visualization tool, especially when comparing many things. Since I had a small section available and I was only comparing two entities, I think it's within the range of efficacy to use a pie chart. 
+ 
+ ```r
+ggplot() +
+  geom_bar(data = Species_comp_and_sampling_time_drop_June_jittered,
+           aes(x = "", 
+               (y =  (..count..)/sum(..count..)),
+               fill = Target),
+           width = 1,
+           color = "white") + 
+    scale_fill_viridis_d() +
+  geom_text(stat = "count",
+    aes(label = sprintf("%2.2g%%",
+                        (((..count..)/sum(..count..))*100))),
+    color = "white",
+    fontface = "bold",
+    size = 16) +                # size of labels
+    theme_classic() +
+  ggtitle("Proportion of Total \nSamples Collected in 2021") +
+  theme(
+    panel.grid = element_blank(),
+    plot.background = element_rect(fill="black"),
+    panel.background = element_rect(fill="black"),
+    plot.title = element_text(color = "white", size = "32", face = "bold"),
+    axis.line = element_blank(),
+    legend.text = element_text(size="24", color="white"),
+    legend.background = element_rect(fill = "black"),
+    axis.text = element_blank(),
+    axis.ticks = element_blank())+
+    coord_polar("y", start=0)
+
+ggsave("plot9.png",
+        width = 4,
+       height = 5,
+       units = "in",
+       dpi = 300)
+ 
+ ```
+![plot9](https://user-images.githubusercontent.com/33985124/182998695-63672fd0-9c73-48d0-a206-763e5afc85ec.png)
+
+Oddly enough my labels wouldnt print on there (I'll have to google and update it later), but it was easy enough to add them in Canva. 
+
+
+![Screen Shot 2022-08-04 at 8 59 29 PM](https://user-images.githubusercontent.com/33985124/182998800-83a043d2-edc9-4b62-b4a6-2ca1824b3189.png)
+
+## Powdery mildew conidia and chasmothecia
+
+For the folks asking about the conidia, conidiophores, and chasmothecia: I traced micrographs I had taken and then shaded them in [Inkscape](https://inkscape.org/). It's like adobe illustrator, but free. Highly recommend. 
+
+[Here's a nice tutorial on illustrations in inkscape](https://www.youtube.com/watch?v=s-kPg4vYKfk).
+
+
+![chasmothecia](https://user-images.githubusercontent.com/33985124/182999268-c2b1960f-e795-44aa-b501-5a65066a8527.png)
+
+## All together now.
+
+Come say 'Hi' to me at Plant Health 2022!
+
+![Screen Shot 2022-08-04 at 9 11 07 PM](https://user-images.githubusercontent.com/33985124/182999833-106dff62-96be-4d53-9845-ecac239deaa5.png)
+
+
+## Questions?
+
+Feel free to drop me a line. I love data visualizations and teaching folks when I can.
+
+Email: [michele.wiseman@oregonstate.edu](mailto:michele.wiseman@oregonstate.edu)
