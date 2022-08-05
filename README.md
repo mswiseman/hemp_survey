@@ -620,11 +620,20 @@ qmplot(
         legend.margin = margin(c(2,2,2,2)))
 
 #need to specify the scale so you don't cut the title off
-ggsave("plo7.png",
+ggsave("plot7.png",
         width = 11,
        height = 8,
        units = "in",
        dpi = 300)
 ```
+Similar story, here's the raw qmplot output:
 
-![plot7](images/plot7.png)
+![plot7](https://user-images.githubusercontent.com/33985124/182993242-d8ad3fbb-632b-44a2-8634-33f2f3e9e132.png)
+
+And the polished up Canva version: 
+
+![plot7-1](https://user-images.githubusercontent.com/33985124/182993416-3ecf0bd1-24a5-43b0-abf5-6a41436e3bcb.png)
+
+You can also change the scale of the map to make the points more clear... something I went back and forth on, but ultimately decided to keep the same scale for consistency. To change the scale, you would change the bounding box of your basemap (e.g. `data = PNW_growers2`). To just captuer the datapoints of interest we could make the bounding box our literal data points. That would look like this: 
+
+![plot7-2](https://user-images.githubusercontent.com/33985124/182993606-27352708-2ecd-4683-b765-267643f4211f.png)
