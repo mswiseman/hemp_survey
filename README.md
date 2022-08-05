@@ -8,6 +8,13 @@ date: '2022-08-04'
 
 Learning R can be hard. I'm uploading this code in hopes of helping you learn; I've taken a few classes on stats and data visualization, but I'm largely self-taught, am no expert, and I'm not a very efficient coder; regardless, I hope you will find this helpful. 
 
+## Data availablility
+
+I can't upload a lot of these data due to privacy concerns for growers (also why the points are jittered); however, some of it is publically available and thus you can use very similar code with the available data:
+
+* [2021 USDA-NASS hemp survey results](https://usda.library.cornell.edu/concern/publications/gf06h2430)
+* [All kinds of agricultural data](https://quickstats.nass.usda.gov/)
+
 ## Resources
 
 Introductory ggmap tutorials: 
