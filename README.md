@@ -517,7 +517,6 @@ Incidence_and_severity <-x2021_datasheet_abb2 %>%
 
 PNW_growers2 <- PNW_growers[-1,]
 
-df[-c(row_index_1, row_index_2),]
 OR_growers2 <- OR_grow_abb
 colnames(PNW_growers2) <- c("Long","Lat","Street")
 colnames(OR_growers2) <- c("Long","Lat","Street")
@@ -528,80 +527,9 @@ PNW_growers2 <- PNW_growers2 %>%
   
 ```
 
-## Visualizing progression of disease
-### Current map
-
-```{r visualizing progression of disease}
-# reload jittered data
-Species_comp_and_sampling_time_drop_June_jittered <- read_xlsx("Desktop/Hemp PM Work/Species_comp_and_sampling_time_drop_June.xlsx")
-
-col_sp2<- c("G. ambrosiae" = "#7d3ec1", "P. macularis"= "#3EC17D") #to match the poster
-col_V6 <-  c("." = "#7d3ec1",
-             "Non-V6"= "#3EC17D",
-             "V6" = "#fce724",
-             "Both" = "#36668c")
-
-jitter <- position_jitter(width = 0.05, height = 0.05)
-jitter2 <- position_jitter(width = 0.1, height = 0.1)
-shape_species2 <- c("G. ambrosiae" = 21, "P. macularis" = 24)
-shape_V6 <- c("V6" = 21, "Non-V6" = 22, "Both" = 23, "." = 24)
-
-# makes sure your months are in the right order
-Species_comp_and_sampling_time_drop_June_jittered$Month_collected <- factor(Species_comp_and_sampling_time_drop_June_jittered$Month_collected, levels = c("July", "August", "September", "October"))
-
-qmplot(
-  Long,
-  Lat,
-  data = Species_comp_and_sampling_time_drop_June_jittered,
-  geom = "blank",
-  maptype = "toner", 
-  legend = "bottomright",
-  zoom = 7 ) +
-  stat_density_2d(aes(fill = ..level..),
-                  geom = "polygon",
-                  alpha = .3,
-                  data = Species_comp_and_sampling_time_drop_June_jittered, contour_var = "density") +
-  scale_fill_viridis_c() +
-  facet_grid(~ Month_collected) +                                                # facet by month
-  guides(fill = guide_legend(title = "Level")) +
-  new_scale_fill() +                                                             # allows two fill scales
-  geom_point(data = Species_comp_and_sampling_time_drop_June_jittered ,
-             aes(
-             x = Long,
-             y = Lat,
-             fill = Target,
-             shape = Target),
-             size = 2,
-             alpha = 0.8,
-             color = "black",
-             position = jitter) +
-  scale_viridis_d() +
-  scale_shape_manual(values = shape_species2) +
-  guides(shape = guide_legend(override.aes = list(size = 5))) +
-  theme(panel.spacing  = unit(.05, "lines"),
-        panel.border = element_rect(color = "black", fill = NA, size = 1), 
-        strip.background = element_rect(color = "black", size = 1, fill = "black"), 
-        legend.background = element_rect(fill=alpha('black')),
-        legend.key=element_blank(),
-        legend.box = "horizontal",
-        legend.position = "bottom",
-        legend.text.align = 1,
-        legend.text = element_text(size=24, color = "white", face="bold"),
-        legend.title = element_text(size=28, face = "bold", color = "white"),
-        strip.text = element_text(face="bold", size=32, color = "white"),
-        legend.margin = margin(c(2,2,2,2)))
-
-#need to specify the scale so you don't cut the title off
-ggsave("plot6.png",
-        width = 11,
-       height = 8,
-       units = "in",
-       dpi = 300)
-
-```
 ## virulence factors map
 
-```{r highlighting virulence factors}
+```r, highlighting virulence factors
 
 qmplot(
   Long,
@@ -635,9 +563,61 @@ qmplot(
         legend.margin = margin(c(2,2,2,2)))
 
 #need to specify the scale so you don't cut the title off
-ggsave("plot9.png",
+ggsave("plot6.png",
         width = 11,
        height = 8,
        units = "in",
        dpi = 300)
 ```
+
+![plot7](images/plot6.png)
+
+
+```r by time
+
+qmplot(
+  Long,
+  Lat,
+  data = PNW_growers2,
+  geom = "blank",
+  maptype = "toner", 
+  legend = "bottomright",
+  zoom = 7 ) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon", alpha = .3, data =     Species_comp_and_sampling_time_drop_June_jittered, contour_var = "density" ) +
+  #geom_density_2d(aes(fill = ..level..), geom = "polygon", alpha = .3, data = Species_comp_and_sampling_time_drop_June_jittered, contour_var = "ndensity") +
+  #stat_density_2d(geom = "point", aes(size = after_stat(density)), n = 10, data = Species_comp_and_sampling_time_drop_June_jittered, contour = FALSE) +
+  scale_fill_viridis_c() +
+  facet_grid(~ Month_collected) +
+  guides(fill = guide_legend(title = "Level")) +
+  new_scale_fill() +
+  geom_point(data= Species_comp_and_sampling_time_drop_June_jittered,
+             aes(x= Long, y= Lat, fill=Target, shape = Target),
+             size = 2,
+             alpha = 0.8,
+             color = "black",
+             position = jitter) + 
+  scale_shape_manual(values = shape_species2) +
+  guides(shape = guide_legend(override.aes = list(size = 5)))+
+  #scale_color_manual(values = col_sp2,
+                    #breaks = "G. ambrosiae", "P. macularis") +
+  theme(panel.spacing  = unit(.05, "lines"),
+        panel.border = element_rect(color = "black", fill = NA, size = 1), 
+        strip.background = element_rect(color = "black", size = 1, fill = "black"), 
+        legend.background = element_rect(fill=alpha('black')),
+        legend.key=element_blank(),
+        legend.box = "horizontal",
+        legend.position = "bottom",
+        legend.text.align = 1,
+        legend.text = element_text(size=24, color = "white", face="bold"),
+        legend.title = element_text(size=28, face = "bold", color = "white"),
+        strip.text = element_text(face="bold", size=32, color = "white"),
+        legend.margin = margin(c(2,2,2,2)))
+
+#need to specify the scale so you don't cut the title off
+ggsave("plo7.png",
+        width = 5,
+       height = 8,
+       units = "in",
+       dpi = 300)
+       
+![plot7](images/plot7.png)
