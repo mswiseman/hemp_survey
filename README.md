@@ -14,6 +14,7 @@ If you haven't installed any of these libraries, remember you can typically inst
 * For notes on theme components, see [here](https://ggplot2.tidyverse.org/reference/theme.html).
 * Map tips [here](https://cran.r-project.org/web/packages/osmplotr/vignettes/basic-maps.html)
 * Custom bounding boxes [here](https://bigquerygeoviz.appspot.com/)
+* ggplot2 made easy with [esquisse](https://github.com/dreamRs/esquisse)
 
 ```r setup
 library(tidyverse)          # manipulating and plotting data
@@ -35,6 +36,7 @@ library(raster)             # reading spacial data
 library(tidyUSDA)           # auto downloading data from USDA-SASS
 library(rgdal)              # bindings to the 'Geospatial' Data Abstraction Library 
 library(USAboundaries)      # loadable maps
+library(esquisse)           # easy to use ggplot2 sketching program with nice GUI
 library(MASS)
 
 ```
