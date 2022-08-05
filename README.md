@@ -4,7 +4,7 @@ author: "Michele Wiseman"
 date: '2022-08-04'
 ---
 
-# Code for figures and maps from our 2021 Hemp Powdery Milew Survey
+# 2021 Hemp Powdery Milew Survey Code
 
 Learning R can be hard. I'm uploading this code in hopes of helping you learn; I'm no expert and I'm not a very efficient coder, but I hope you will find it helpful regardless. 
 
@@ -44,6 +44,7 @@ library(USAboundaries)      # loadable maps
 library(esquisse)           # easy to use ggplot2 sketching program with nice GUI
 library(tools)              # for quickly changing headers to titlecase
 library(MASS)               # for density calculations
+library(viridis)            # colorblind-friendly color palletes 
 
 ```
 
