@@ -6,15 +6,23 @@ date: '2022-08-04'
 
 # 2021 Hemp Powdery Milew Survey Code
 
-Learning R can be hard. I'm uploading this code in hopes of helping you learn; I'm no expert and I'm not a very efficient coder, but I hope you will find it helpful regardless. 
+Learning R can be hard. I'm uploading this code in hopes of helping you learn; I've taken a few classes on stats and data visualization, but I'm largely self-taught, am no expert, and I'm not a very efficient coder; regardless, I hope you will find this helpful. 
+
+## Resources
+
+Introductory ggmap tutorials: 
+* [ggmap by Robin Lovelace](https://rpubs.com/RobinLovelace/ggmap)
+* [Custom bounding boxes](https://bigquerygeoviz.appspot.com/)
+* [Little miss data ggmap](https://www.littlemissdata.com/blog/maps)
+* [ggmap github repository](https://github.com/dkahle/ggmap)
+* [iNaturalist mapping by me](https://github.com/mswiseman/R-examples/blob/main/iNat.md)
+
+Introductory ggplot2
+* ggplot2 made easy with [esquisse](https://github.com/dreamRs/esquisse)
+* For notes on theme components, see [here](https://ggplot2.tidyverse.org/reference/theme.html).
 
 ## Load necessary libraries
 If you haven't installed any of these libraries, remember you can typically install them through the `install.packages('packagenamehere')` command. For packages not on cran, you can usually install them directly from their github repository using `devtools::install_github("user/repository")`.
-
-* For notes on theme components, see [here](https://ggplot2.tidyverse.org/reference/theme.html).
-* Map tips [here](https://cran.r-project.org/web/packages/osmplotr/vignettes/basic-maps.html)
-* Custom bounding boxes [here](https://bigquerygeoviz.appspot.com/)
-* ggplot2 made easy with [esquisse](https://github.com/dreamRs/esquisse)
 
 ```r setup
 # to install a bunch of packages at once, uncomment and follow the format below:
@@ -227,21 +235,25 @@ states <- map_data("state")
 oregon_wash <- states %>%
   filter(region %in% c("oregon","washington"))
 
+# use dplyr from tidyverse to filter for the variables we're interested in
+# by using `c()`, we can combine variables and filter for multiple at once
 gcounty <- map_data("county") %>%
   filter(region %in% c("oregon", "washington"))
 
+# info on Federal Information Processing Standards (FIPS) code here: https://www.census.gov/library/reference/code-lists/ansi.html
 fipstab <-
     transmute(maps::county.fips, fips, county = sub(":.*", "", polyname)) %>%
     unique() %>%
     separate(county, c("region", "subregion"), sep = ",")
 
+# join the two dataframes into one df
 gcounty <- left_join(gcounty, fipstab, c("region", "subregion"))
 
 counties <- st_as_sf(map("county", plot = FALSE, fill = TRUE))
 counties <- subset(counties, grepl("florida", counties$ID))
 counties$area <- as.numeric(st_area(counties))
 
-#bounding box for the area
+# bounding box for the area
 box <- make_bbox(long, lat, data = oregon_wash)
 
 ```
