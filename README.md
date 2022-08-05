@@ -527,7 +527,9 @@ PNW_growers2 <- PNW_growers2 %>%
   
 ```
 
-## virulence factors map
+## Virulence factors map
+
+I'll admit that this next map I redid the legend in canva because I couldn't quite get it the way I wanted to. Below the code is the R version and then below that is the canva edited version. 
 
 ```r, highlighting virulence factors
 
@@ -569,9 +571,13 @@ ggsave("plot6.png",
        units = "in",
        dpi = 300)
 ```
+Raw from R
 
 ![plot6](images/plot6.png)
 
+Edited in Canva
+
+![plot6-2](images/plot6-2.png)
 
 ```r by time
 
