@@ -399,7 +399,7 @@ ggmap(counties_spec) +
 ggsave("plot4.png", width = 8, height = 11, units = "in", dpi = 300)
 ```
 
-<img align="center" width="600" alt="Plot4" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot4.png?raw=true" class="padding"/>
+<img align="center" width="600" alt="Plot4" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot4.png" class="padding"/>
 
 ## More map prep
 
@@ -449,7 +449,7 @@ geom_polygon(data = oregon_wash,
     )
     
  ```
-<img align="center" width="600" alt="Plot5" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot5.png?raw=true" class="padding"/>    
+<img align="center" width="600" alt="Plot5" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot5.png" class="padding"/>    
 
 ## Making density data
 
