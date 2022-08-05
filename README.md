@@ -9,7 +9,7 @@ date: '2022-08-04'
 Learning R can be hard. I'm uploading this code in hopes of helping you learn; I'm no expert and I'm not a very efficient coder, but I hope you will find it helpful regardless. 
 
 ## Load necessary libraries
-If you haven't installed any of these libraries, remember you can typically install them through the `install.packages('packagenamehere')` command. 
+If you haven't installed any of these libraries, remember you can typically install them through the `install.packages('packagenamehere')` command. For packages not on cran, you can usually install them directly from their github repository using `devtools::install_github("user/repository")`.
 
 * For notes on theme components, see [here](https://ggplot2.tidyverse.org/reference/theme.html).
 * Map tips [here](https://cran.r-project.org/web/packages/osmplotr/vignettes/basic-maps.html)
@@ -17,6 +17,11 @@ If you haven't installed any of these libraries, remember you can typically inst
 * ggplot2 made easy with [esquisse](https://github.com/dreamRs/esquisse)
 
 ```r setup
+# to install a bunch of packages at once, uncomment and follow the format below:
+#install.packages(c("tidyverse","usmap","scales","ggnewscale","readr","devtools"))
+
+# If you've already installed the packages below, you can load them up with the code below:
+
 library(tidyverse)          # manipulating and plotting data
 library(usmap)              # preloaded us maps
 library(scales)             # allows scale customization
@@ -37,7 +42,8 @@ library(tidyUSDA)           # auto downloading data from USDA-SASS
 library(rgdal)              # bindings to the 'Geospatial' Data Abstraction Library 
 library(USAboundaries)      # loadable maps
 library(esquisse)           # easy to use ggplot2 sketching program with nice GUI
-library(MASS)
+library(tools)              # for quickly changing headers to titlecase
+library(MASS)               # for density calculations
 
 ```
 
@@ -64,7 +70,6 @@ x2021_hemp_national_acreage <- read_excel("~2021-Hemp_National_Acreage_Data.xlsx
 
 
 # Slimming columns to save memory
-
 x2021_datasheet_abb <- x2021_datasheet[,c(1:3,6:7,9:13)]
 
 
@@ -72,7 +77,7 @@ x2021_datasheet_abb <- x2021_datasheet[,c(1:3,6:7,9:13)]
 ## Looking at hemp production by state
 Download the [2021 hemp survey results](https://usda.library.cornell.edu/concern/publications/gf06h2430) and remove the spaces and special symbols ($ / , etc.) in the headers to make it more R friendly. You can do this in R, but I find ctrl+f and then replace to be super fast in excel. I replaced all spaces with underscores and wrote out symbols when present. 
 
-```{r hemp usda}
+```r hemp usda
 hemp_open_production <- x2021_hemp_national_acreage %>%
   filter(Data_Item == "IN_THE_OPEN_UTILIZED_FLORAL_PRODUCTION_MEASURED_IN_DOLLARS")
 
@@ -81,11 +86,11 @@ my_breaks = c(0, 5000000, 10000000, 50000000, 200000000)
 
 # Use USmap to quickly plot out the state values
 plot_usmap(data = hemp_open_production,
-           values = "Value",      # Value in this case is in dollars
-           labels = TRUE,         # text labels
-           label_color = "white", 
+           values = "Value",        # Value in this case is in dollars
+           labels = TRUE,           # text labels
+           label_color = "white",   # color of text labels
            face = "bold", 
-           alpha = 0.8) +         # alpha = transparancy
+           alpha = 0.8) +           # alpha = transparancy of layer
   ggtitle("2021 Total Production Value of Open Grown Hemp Flower By State") +
   scale_fill_gradient2("Production Value \n (Dollars)",
                        low = "#440154",                 # purple
@@ -95,11 +100,12 @@ plot_usmap(data = hemp_open_production,
                        midpoint = 100000000) +
   theme(
     legend.background = element_blank(),
-    legend.position = c(0.9,0))
+    legend.position = c(0.9,0))               # Puts legend on map, but out of way. Think cartesian coordinates when determining numbers.
 
 ```
 
 <img align="center" width="600" alt="Plot2" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot2.png?raw=true" class="padding"/>
+
 ## Plotting county data
 
 ```r county data
@@ -129,7 +135,7 @@ TidyUSDA is a pretty nifty library that enables quick downloading of USDA-SASS d
 
 More info on TidyUSDA [here](https://github.com/bradlindblad/tidyUSDA). 
 
-```{r TidyUSDA data}
+```r TidyUSDA data
 # uncomment below to get a quick tutorial of the library.
 #vignette("using_tidyusda")  <- tutorial 
 
@@ -167,14 +173,14 @@ q[1] <- "fips"
 colnames(hop_county_harvest) <- q
 hop_county_harvest$fips <- as.integer(hop_county_harvest$fips)
 
-  ```
+```
   
  ## Process address data
  For the privacy of growers, I won't link the excel spreadsheet with addresses, though it is available to the public. 
  
  When using address data, you have to convert it to lat/long before mapping it with a lot of the R mapping packages. In the box below I'm feeding in address data and the Google API is returning lat, long data in a new column. For a google API key, sign up [here](https://developers.google.com/maps/documentation/javascript/get-api-key). 
  
- ```{r process hemp addresses}
+ ```r process hemp addresses
  
 # insert your google api key
 register_google(key = '')     # you have to sign up for this. 
@@ -223,7 +229,6 @@ oregon_wash <- states %>%
 gcounty <- map_data("county") %>%
   filter(region %in% c("oregon", "washington"))
 
-
 fipstab <-
     transmute(maps::county.fips, fips, county = sub(":.*", "", polyname)) %>%
     unique() %>%
@@ -239,7 +244,6 @@ counties$area <- as.numeric(st_area(counties))
 box <- make_bbox(long, lat, data = oregon_wash)
 
 ```
-
 ## Lets try some stamen maps
 
 ```r, exploring maps with for loop
@@ -261,10 +265,11 @@ maptype <- c("terrain-labels", "terrain-lines", "toner", "toner-2011", "toner-ba
 mylist <- vector("list", length(maptype))
 num <- 0
 
-#for whatever reason I needed to uninstall and reinstall ggmap here... if you get an 'Error in gzfile(file, "rb") : cannot open the connection' then you may need to do the same. Uncomment the next three lines if you need to do this. 
+# for whatever reason I needed to uninstall and reinstall ggmap here... if you get an 'Error in gzfile(file, "rb") : cannot open the connection' then you may need to do the same. Uncomment the next three lines if you need to do this. 
 
+#detach('package:ggmap', unload=TRUE)
 #remove.packages("ggmap")
-#install.packages("ggmap")
+#devtools::install_github("dkahle/ggmap")
 #library(ggmap)
 
 # Previewing different basemaps with our data. 
@@ -332,6 +337,7 @@ counties_spec <- ggmap_bbox(gmap)
 
 
 ```
+
 ## Converting dfs to geom_sf objects
 
 ```r geom sf conversion
@@ -553,15 +559,17 @@ qmplot(
   maptype = "toner", 
   legend = "bottomright",
   zoom = 7 ) +
-  stat_density_2d(aes(fill = ..level..), geom = "polygon", alpha = .3, data =     Species_comp_and_sampling_time_drop_June_jittered, contour_var = "density" ) +
-  #geom_density_2d(aes(fill = ..level..), geom = "polygon", alpha = .3, data = Species_comp_and_sampling_time_drop_June_jittered, contour_var = "ndensity") +
-  #stat_density_2d(geom = "point", aes(size = after_stat(density)), n = 10, data = Species_comp_and_sampling_time_drop_June_jittered, contour = FALSE) +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon", alpha = .3,
+  data = Species_comp_and_sampling_time_drop_June_jittered, contour_var = "density" ) +
   scale_fill_viridis_c() +
   facet_grid(~ Month_collected) +
   guides(fill = guide_legend(title = "Level")) +
   new_scale_fill() +
   geom_point(data= Species_comp_and_sampling_time_drop_June_jittered,
-             aes(x= Long, y= Lat, fill=Target, shape = Target),
+             aes(x= Long,
+             y= Lat,
+             fill=Target,
+             shape = Target),
              size = 2,
              alpha = 0.8,
              color = "black",
@@ -755,13 +763,14 @@ For the folks asking about the conidia, conidiophores, and chasmothecia: I trace
 
 ## All together now.
 
-Come say 'Hi' to me at Plant Health 2022!
+Come say 'Hi' to me at [Plant Health 2022](https://www.apsnet.org/meetings/annual/PH2022/Pages/default.aspx). 
 
 ![Screen Shot 2022-08-04 at 9 11 07 PM](https://user-images.githubusercontent.com/33985124/182999833-106dff62-96be-4d53-9845-ecac239deaa5.png)
 
+If you want the hi-res version you can email me.
 
-## Questions?
+## Questions, comments, etc.?
 
-Feel free to drop me a line. I love data visualizations and teaching folks when I can.
+Feel free to drop me a line. I love data visualizations and teaching folks when I can. I also love tips if you have suggestions about how to improve my code (I'm learning too). 
 
 Email: [michele.wiseman@oregonstate.edu](mailto:michele.wiseman@oregonstate.edu)
