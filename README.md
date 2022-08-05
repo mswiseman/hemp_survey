@@ -97,7 +97,6 @@ plot_usmap(data = hemp_open_production,
 
 ```
 <img align="center" width="600" alt="Plot2" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot2.png?raw=true" class="padding"/>
-
 ## Plotting county data
 
 ```r county data
@@ -300,9 +299,7 @@ ggsave("plot3.png", width = 8, height = 11, units = "in", dpi = 300)
 #################    end for loop     #################
 
 ```
-
 <img align="center" width="600" alt="Plot3" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot3.png?raw=true" class="padding"/>
-
 The stamen maps are really nice, but for whatever reason you can't overlay geom_sf onto gmap objects that easily (they don't line up because they're different coordinate types). I found a hack online to fix this, hence the next set of code below.
 
 ```r playing with the best looking map
@@ -396,9 +393,7 @@ ggmap(counties_spec) +
 
 ggsave("plot4.png", width = 8, height = 11, units = "in", dpi = 300)
 ```
-
 <img align="center" width="600" alt="Plot4" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot4.png?raw=true" class="padding"/>
-
 ```r converting df to geom_sf
 
 states <- st_as_sf(map("state", plot = FALSE, fill = TRUE))
@@ -446,9 +441,7 @@ geom_polygon(data = oregon_wash,
     )
     
  ```
-<img align="center" width="600" alt="Plot5" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot5.png?raw=true" class="padding"/>
-
-    
+<img align="center" width="600" alt="Plot5" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot5.png?raw=true" class="padding"/>    
 ```r, density
 
 # get density polygons
