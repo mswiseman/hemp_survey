@@ -25,8 +25,8 @@ Introductory ggmap tutorials:
 * [iNaturalist mapping by me](https://github.com/mswiseman/R-examples/blob/main/iNat.md)
 
 Introductory ggplot2
-* ggplot2 made easy with [esquisse](https://github.com/dreamRs/esquisse)
-* For notes on theme components, see [here](https://ggplot2.tidyverse.org/reference/theme.html).
+* [ggplot2 made easy with esquisse](https://github.com/dreamRs/esquisse)
+* [Customizing theme components](https://ggplot2.tidyverse.org/reference/theme.html)
 
 ## Load necessary libraries
 If you haven't installed any of these libraries, remember you can typically install them through the `install.packages('packagenamehere')` command. For packages not on cran, you can usually install them directly from their github repository using `devtools::install_github("user/repository")`.
