@@ -604,8 +604,8 @@ qmplot(
              position = jitter) + 
   scale_shape_manual(values = shape_species2) +
   guides(shape = guide_legend(override.aes = list(size = 5)))+
-  #scale_color_manual(values = col_sp2,
-                    #breaks = "G. ambrosiae", "P. macularis") +
+  scale_fill_manual(values = col_sp2,
+  breaks = "G. ambrosiae", "P. macularis") +
   theme(panel.spacing  = unit(.05, "lines"),
         panel.border = element_rect(color = "black", fill = NA, size = 1), 
         strip.background = element_rect(color = "black", size = 1, fill = "black"), 
