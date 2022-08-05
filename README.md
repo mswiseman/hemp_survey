@@ -639,3 +639,98 @@ You can also change the scale of the map to make the points more clear... someth
 
 <img align="center" width="600" alt="Plot7-2" src="https://user-images.githubusercontent.com/33985124/182993606-27352708-2ecd-4683-b765-267643f4211f.png" class="padding"/>
 
+## Plotting our data
+
+Let's use various bar charts to visualize our species data
+
+```r
+ggplot(data = Species_comp_and_sampling_time,
+           aes(x = Month_collected,
+               (y = (..count..)/sum(..count..)), 
+               fill = Target)) +
+  geom_bar(color = "white",                                     # bar borders, 'white' makes them pop on black
+           position = position_dodge(width = .9)) +             # dodge bars; if removed, you'll stack them
+  scale_fill_viridis_d() +                                      # purple yellow colorblind friendly theme
+  geom_text(stat = "count",
+    aes(label = sprintf("n = %2d \n %2.2g%%",                   # fancy way of combining characters and numbers into labels
+                        ..count..,                              # number printed by %2d
+                        (((..count..)/sum(..count..))*100))),   # the number printed by %2.2g
+    color = "white",
+    lineheight = 0.8,                                           # decreases page break (\n) distance
+    size = 4,                                                   # size of bar labels
+    fontface = "bold",                                          # makes labels bold
+    vjust = -0.5,                                               # moves labels over bars
+    position = position_dodge(width = .9)) +                    # adjusts labels so they match the position dodge above
+  ylim(0, 0.55) +
+  theme_classic() +
+  ggtitle("Proportion of Total Samples Collected in 2021") +
+  theme(
+    panel.grid = element_blank(),                               # removes busy grid
+    plot.background = element_rect(fill="black"),               # self explanatory
+    panel.background = element_rect(fill="black"),
+    plot.title = element_text(color = "white", size = "20", face = "bold"),
+    axis.line = element_line(color = "white"),
+    legend.text = element_text(size="12", color="white",  face = "italic"),
+    legend.position = c(0.8, 0.8),                              # places legend on the plot (save poster space)
+    legend.background = element_rect(fill = "black"),
+    axis.text = element_text(size="12", color="white"),
+    axis.text.x = element_text(angle = 30, vjust = 0.6, face = "bold"),
+    plot.margin = margin(30, 0, 0, 0),
+    axis.ticks = element_line(color = "white")) 
+    
+  ```
+  
+  <img align="center" width="600" alt="Plot8" src="https://user-images.githubusercontent.com/33985124/182995243-19498908-7b41-4636-ba39-fb7bf2b0aa36.png" class="padding"/>
+  
+  If we wanted to do a stacked chart instead, we'd change a few parameters:
+  * remove `position = position_dodge` in `geom_bar` and `geom_label`
+  * tweak vjust and label size until it works for our bars
+  * nudge `legend.position`
+  * close paranthesis and add plus signs
+
+```r stacked
+ggplot(data = Species_comp_and_sampling_time,
+           aes(x = Month_collected,
+               (y = (..count..)/sum(..count..)), 
+               fill = Target)) +
+  geom_bar(color = "white") +                                   # bar borders, 'white' makes them pop on black
+  scale_fill_viridis_d() +                                      # purple yellow colorblind friendly theme
+  geom_text(stat = "count", 
+    aes(label = sprintf("n = %2d \n %2.2g%%",                   # fancy way of combining characters and numbers into labels
+                        ..count..,                              # number printed by %2d
+                        (((..count..)/sum(..count..))*100))),   # the number printed by %2.2g
+    color = "white",
+    lineheight = 0.8,                                           # decreases page break (\n) distance
+    size = 4,                                                   # size of bar labels
+    vjust = -0.5,                                               # brings down labels
+    fontface = "bold") +
+  ylim(0, 0.55) +
+  theme_classic() +
+  ggtitle("Proportion of Total Samples Collected in 2021") +   # title of plot
+  theme(
+    panel.grid = element_blank(),                              # removes busy grid
+    plot.background = element_rect(fill="black"),              # self explanatory
+    panel.background = element_rect(fill="black"),
+    plot.title = element_text(color = "white", size = "20", face = "bold"),
+    axis.line = element_line(color = "white"),
+    legend.text = element_text(size="12", color="white",  face = "italic"),
+    legend.position = c(0.88, 0.8),                            # places legend on the plot (save poster space)
+    legend.background = element_rect(fill = "black"),
+    axis.text = element_text(size="12", color="white"),
+    axis.text.x = element_text(angle = 30, vjust = 0.6, face = "bold"),
+    plot.margin = margin(30, 0, 0, 0),
+    axis.ticks = element_line(color = "white")) 
+
+
+ggsave("plot8-2.png",
+        width = 11,
+       height = 7,
+       units = "in",
+       dpi = 300)
+```
+
+ <img align="center" width="600" alt="Plot8-2" src="https://user-images.githubusercontent.com/33985124/182996281-2f4fcb7e-d0b3-42ef-98db-4f25c90d516f.png" class="padding"/>
+  
+  It's not perfect, but it's pretty good. If I'd have used that graph then I would have edited the labels with Canva. 
+  
+  
