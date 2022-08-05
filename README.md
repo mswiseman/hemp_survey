@@ -643,8 +643,8 @@ ggplot(data = Species_comp_and_sampling_time,
     axis.ticks = element_line(color = "white")) 
     
   ```
-  
-  <img align="center" width="600" alt="Plot8" src="https://user-images.githubusercontent.com/33985124/182995243-19498908-7b41-4636-ba39-fb7bf2b0aa36.png" class="padding"/>
+  <img align="center" width="600" alt="Plot8" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot8.png" class="padding"/>    
+
   
   If we wanted to do a stacked chart instead, we'd change a few parameters:
   * remove `position = position_dodge` in `geom_bar` and `geom_label`
@@ -692,8 +692,8 @@ ggsave("plot8-2.png",
        units = "in",
        dpi = 300)
 ```
+<img align="center" width="600" alt="Plot8-2" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot8-2.png" class="padding"/>    
 
- <img align="center" width="600" alt="Plot8-2" src="https://user-images.githubusercontent.com/33985124/182996281-2f4fcb7e-d0b3-42ef-98db-4f25c90d516f.png" class="padding"/>
   
   It's not perfect, but it's pretty good. If I'd have used that graph then I would have edited the labels with Canva. 
   
@@ -737,7 +737,7 @@ ggsave("plot9.png",
        dpi = 300)
  
  ```
-![plot9](https://user-images.githubusercontent.com/33985124/182998695-63672fd0-9c73-48d0-a206-763e5afc85ec.png)
+<img align="center" width="600" alt="Plot9" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot9.png" class="padding"/>    
 
 Oddly enough my labels wouldnt print on there (I'll have to google and update it later), but it was easy enough to add them in Canva. 
 
