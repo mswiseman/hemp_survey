@@ -564,13 +564,13 @@ qmplot(
 
 #need to specify the scale so you don't cut the title off
 ggsave("plot6.png",
-        width = 11,
+        width = 5,
        height = 8,
        units = "in",
        dpi = 300)
 ```
 
-![plot7](images/plot6.png)
+![plot6](images/plot6.png)
 
 
 ```r by time
@@ -615,9 +615,10 @@ qmplot(
 
 #need to specify the scale so you don't cut the title off
 ggsave("plo7.png",
-        width = 5,
+        width = 11,
        height = 8,
        units = "in",
        dpi = 300)
-       
+```
+
 ![plot7](images/plot7.png)
