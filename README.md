@@ -96,7 +96,9 @@ plot_usmap(data = hemp_open_production,
     legend.position = c(0.9,0))
 
 ```
-![plot2.png](images/plot2.png)
+
+<img align="center" width="600" alt="Plot2" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot2.png?raw=true" class="padding"/>
+
 
 ## Plotting county data
 
@@ -120,7 +122,8 @@ ggplot() +
   geom_sf(data=counties_spec, fill = NA, show.legend = F, color="gray50", lwd=0.4) +
   theme_bw()
 ```
-[plot1](images/plot1.png)
+
+<img align="center" width="600" alt="Plot1" src="https://github.com/mswiseman/hemp_survey/blob/main/images/plot1.png?raw=true" class="padding"/>
 
 
 ## Using TidyUSDA
