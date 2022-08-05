@@ -648,7 +648,7 @@ ggplot(data = Species_comp_and_sampling_time,
   
   If we wanted to do a stacked chart instead, we'd change a few parameters:
   * remove `position = position_dodge` in `geom_bar` and `geom_label`
-  * tweak vjust and label size until it works for our bars
+  * tweak `vjust` and `label size` until it works for our bars
   * nudge `legend.position`
   * close paranthesis and add plus signs
 
