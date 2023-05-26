@@ -359,6 +359,7 @@ counties_spec <- ggmap_bbox(gmap)
 ```
 
 ## Converting dfs to geom_sf objects
+Crs 4326 reads standard lat/long; however, many base maps (such as stamen) are encoded in crs 3857. Alas, this is why my code switches between the two. 
 
 ```r geom sf conversion
 
@@ -518,6 +519,7 @@ PNW_growers2 <- PNW_growers2 %>%
 ```
 
 ## Virulence factors map
+Note: some of the virulence factor data mapping below included samples that werent part of the official survey (deemed "convienence samples"). These samples were removed in later itertations because the sampling design was different. 
 
 ```r, highlighting virulence factors
 
