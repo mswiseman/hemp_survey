@@ -1,4 +1,4 @@
-<img width="532" alt="image" src="https://github.com/mswiseman/hemp_survey/assets/33985124/1199448b-cc56-49f4-80bd-ba650186bed4"># Code for data produced in Rivedal et al. 2023 Hemp Powdery Mildew Survey submitted to PhytoFrontiers
+# Code for data produced in Rivedal et al. 2023 Hemp Powdery Mildew Survey submitted to PhytoFrontiers
 
 ## Map
 
