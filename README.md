@@ -18,8 +18,10 @@ library(ggpubr)
 
 Load data
 
+**Note: all of the coordinates have been heavily jittered to provide collaborating growers some anonimity.**
+
 ```r
-county_and_yield_data <- read_csv("Hop_Data.csv")
+county_and_yield_data <- read_csv("hopdata.csv")
 summary_data <- read_csv("forpub.csv")
 
 ```
