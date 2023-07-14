@@ -4,7 +4,15 @@
 
 Load necessary packages
 
+
+
+
 ```r
+# Update: `library(USAboundariesData)` is no longer supported by CRAN; however, you can download it using remotes:
+# install.packages("remotes")
+# remotes::install_github("ropensci/USAboundaries")
+# remotes::install_github("ropensci/USAboundariesData")
+
 library(ggnewscale)
 library(tidyverse)
 library(sf)
