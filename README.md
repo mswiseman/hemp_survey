@@ -13,6 +13,7 @@ library(USAboundaries)
 library(USAboundariesData)
 library(usmap)
 library(ggpubr)
+library(rgeos( 
 
 ```
 
@@ -21,9 +22,7 @@ Load data
 **Note: all of the coordinates have been heavily jittered to provide collaborating growers some anonimity.**
 
 ```r
-county_and_yield_data <- read_csv("hopdata.csv")
 summary_data <- read_csv("forpub.csv")
-
 ```
 
 Base map
@@ -42,6 +41,43 @@ counties_spec <- us_counties(resolution = "high", states=state_names)
 counties_spec_3857 <- st_transform(counties_spec, 3857)
 
 ```
+
+Download 2017 USDA Hop Yield by County Data (the last year available). Get an API key [here](https://quickstats.nass.usda.gov/api/). Read more about tidyUSDA [here](https://bradlindblad.github.io/tidyUSDA/).
+
+```r
+
+key <- 'insert-usda-api-key'. # get a key from USDA and paste it here
+
+# lets look at the last available county data for hops (2017)
+hop_county_harvest <- tidyUSDA::getQuickstat(
+  sector= NULL,
+  group= NULL,
+  commodity= 'HOPS',
+  category= NULL,
+  domain='TOTAL',
+  county= NULL,
+  key = key,
+  program = NULL,
+  data_item = "HOPS - ACRES HARVESTED",
+  geographic_level = 'COUNTY',
+  year = "2017",
+  state = c('WASHINGTON','OREGON'),
+  geometry = TRUE,
+  lower48 = TRUE, 
+  weighted_by_area = FALSE)
+
+# drop any counties that have null values
+hop_county_harvest <- hop_county_harvest %>%
+  drop_na(Value)
+
+# need to rename a column for later
+q <- colnames(hop_county_harvest)
+q[1] <- "fips"
+colnames(hop_county_harvest) <- q
+hop_county_harvest$fips <- as.integer(hop_county_harvest$fips)
+```
+
+
 
 Preparing our data
 
@@ -85,7 +121,7 @@ Full map
 map_2021 <- ggmap(counties_spec) + 
   coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
   geom_sf(data = counties_spec_3857, inherit.aes = FALSE, fill = NA, color = "gray90") +
-  geom_sf(data = county_and_yield_data,   
+  geom_sf(data = hop_county_harvest,   
           aes(fill = as.numeric(Value*0.404686),   # convert to hectares
        geometry = geometry), inherit.aes = FALSE) +
   scale_fill_viridis_c()+
@@ -133,7 +169,7 @@ map_2021 <- ggmap(counties_spec) +
 map_2022 <-ggmap(counties_spec) + 
   coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
   geom_sf(data = counties_spec_3857, inherit.aes = FALSE, fill = NA, color = "gray90") +
-  geom_sf(data = county_and_yield_data,   
+  geom_sf(data = hop_county_harvest,   
           aes(fill = as.numeric(Value*0.404686),   # convert to hectares
        geometry = geometry), inherit.aes = FALSE) +
   scale_fill_viridis_c()+
