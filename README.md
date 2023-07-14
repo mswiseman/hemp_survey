@@ -21,7 +21,7 @@ library(USAboundaries)
 library(USAboundariesData)
 library(usmap)
 library(ggpubr)
-library(rgeos( 
+library(rgeos)
 
 ```
 
@@ -38,15 +38,46 @@ Base map
 ```r
 # set the state and county names of interest
 state_names <- c("Oregon", "Washington")
+states <- map_data("state") 
 
 # get STATE data
 OR_WA_2<-us_states(resolution = "high", states = state_names) %>%
   st_transform(crs = 4326)
+oregon_wash <- states %>%
+  filter(region %in% c("oregon","washington"))
 
 # get COUNTY data for a given state
 counties_spec <- us_counties(resolution = "high", states=state_names)
 
 counties_spec_3857 <- st_transform(counties_spec, 3857)
+
+# bounding box for OR/WA
+box <- make_bbox(long, lat, data = oregon_wash)
+
+# get map for background
+gmap <- get_stamenmap(box, zoom = 7, maptype = "toner-background")
+
+counties_spec_3857 <- st_transform(counties_spec, 3857) 
+
+ggmap_bbox <- function(map) {
+  if (!inherits(map, "ggmap")) stop("map must be a ggmap object")
+  # Extract the bounding box (in lat/lon) fdrom the ggmap to a numeric vector, 
+  # and set the names to what sf::st_bbox expects:
+  map_bbox <- setNames(unlist(attr(map, "bb")), 
+                       c("ymin", "xmin", "ymax", "xmax"))
+  
+  # Coonvert the bbox to an sf polygon, transform it to 3857, 
+  # and convert back to a bbox (convoluted, but it works)
+  bbox_3857 <- st_bbox(st_transform(st_as_sfc(st_bbox(map_bbox, crs = 4326)), 3857))
+  
+  # Overwrite the bbox of the ggmap object with the transformed coordinates 
+  attr(map, "bb")$ll.lat <- bbox_3857["ymin"]
+  attr(map, "bb")$ll.lon <- bbox_3857["xmin"]
+  attr(map, "bb")$ur.lat <- bbox_3857["ymax"]
+  attr(map, "bb")$ur.lon <- bbox_3857["xmax"]
+  map
+}
+stamen_county_map <- ggmap_bbox(gmap)
 
 ```
 
@@ -126,7 +157,7 @@ Full map
 
 ```
 # Map for 2021
-map_2021 <- ggmap(counties_spec) + 
+map_2021 <- ggmap(stamen_county_map) + 
   coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
   geom_sf(data = counties_spec_3857, inherit.aes = FALSE, fill = NA, color = "gray90") +
   geom_sf(data = hop_county_harvest,   
@@ -143,14 +174,14 @@ map_2021 <- ggmap(counties_spec) +
                       breaks = c(5, 50, 500, 5000,
                       aesthetics = "fill"))  +
   new_scale_fill() +
-  geom_sf(data = negative_sites_sf_2021,
+  geom_sf(data = negative_2021_sf,
           colour = "black",
           fill = "#414487FF",
           size = 1.5,
           shape = 23,
           alpha = 0.8,
           inherit.aes = FALSE) +
-  geom_sf(data = gamb_positives_sf_2021,
+  geom_sf(data = gamb_positives_2021_sf,
           aes(geometry = geometry),
           fill = "#22A884FF",
           colour = "black",
@@ -158,7 +189,7 @@ map_2021 <- ggmap(counties_spec) +
           shape = 21,
           alpha = 0.8,
           inherit.aes = FALSE) +
-  geom_sf(data = pmac_gamb_positives_sf_2021,
+  geom_sf(data = pmac_gamb_positives_2021_sf,
           aes(geometry = geometry),
           fill = "#FDE725FF",
           colour = "black",
@@ -174,7 +205,7 @@ map_2021 <- ggmap(counties_spec) +
 
 
 # Map for 2022
-map_2022 <-ggmap(counties_spec) + 
+map_2022 <-ggmap(stamen_county_map) + 
   coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
   geom_sf(data = counties_spec_3857, inherit.aes = FALSE, fill = NA, color = "gray90") +
   geom_sf(data = hop_county_harvest,   
@@ -191,14 +222,14 @@ map_2022 <-ggmap(counties_spec) +
                       breaks = c(5, 50, 500, 5000,
                       aesthetics = "fill"))  +
   new_scale_fill() +
-  geom_sf(data = negative_sites_sf_2022,
+  geom_sf(data = negative_2022_sf,
           colour = "black",
           fill = "#414487FF",
           size = 1.5,
           shape = 23,
           alpha = 0.8,
           inherit.aes = FALSE) +
-  geom_sf(data = gamb_positives_sf_2022,
+  geom_sf(data = gamb_positives_2022_sf,
           aes(geometry = geometry),
           fill = "#22A884FF",
           colour = "black",
@@ -206,7 +237,7 @@ map_2022 <-ggmap(counties_spec) +
           shape = 21,
           alpha = 0.8,
           inherit.aes = FALSE) +
-  geom_sf(data = pmac_gamb_positives_sf_2022,
+  geom_sf(data = pmac_gamb_positives_2022_sf,
           aes(geometry = geometry),
           fill = "#FDE725FF",
           colour = "black",
