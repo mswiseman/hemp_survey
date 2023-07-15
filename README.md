@@ -173,7 +173,7 @@ map_2021 <- ggmap(stamen_county_map) +
   geom_sf(data = negative_2021_sf,
           colour = "black",
           fill = "#414487FF",
-          size = 1.5,
+          size = 2,
           shape = 23,
           alpha = 0.8,
           inherit.aes = FALSE) +
@@ -181,7 +181,7 @@ map_2021 <- ggmap(stamen_county_map) +
           aes(geometry = geometry),
           fill = "#22A884FF",
           colour = "black",
-          size = 1.5,
+          size = 2,
           shape = 21,
           alpha = 0.8,
           inherit.aes = FALSE) +
@@ -189,7 +189,7 @@ map_2021 <- ggmap(stamen_county_map) +
           aes(geometry = geometry),
           fill = "#FDE725FF",
           colour = "black",
-          size = 1.5,
+          size = 2,
           shape = 21,
           alpha = 0.8,
           inherit.aes = FALSE) +
@@ -221,7 +221,7 @@ map_2022 <-ggmap(stamen_county_map) +
   geom_sf(data = negative_2022_sf,
           colour = "black",
           fill = "#414487FF",
-          size = 1.5,
+          size = 2,
           shape = 23,
           alpha = 0.8,
           inherit.aes = FALSE) +
@@ -229,7 +229,7 @@ map_2022 <-ggmap(stamen_county_map) +
           aes(geometry = geometry),
           fill = "#22A884FF",
           colour = "black",
-          size = 1.5,
+          size = 2,
           shape = 21,
           alpha = 0.8,
           inherit.aes = FALSE) +
@@ -237,17 +237,14 @@ map_2022 <-ggmap(stamen_county_map) +
           aes(geometry = geometry),
           fill = "#FDE725FF",
           colour = "black",
-          size = 1.5,
+          size = 2,
           shape = 21,
           alpha = 0.8,
           inherit.aes = FALSE) +
   theme(legend.key = element_blank(),        
-      legend.position = c(0.8, 0.1), # adjust these values as needed
-      legend.direction = "horizontal",
+      legend.position = c(0.78, 0.15), # adjust these values as needed
       legend.title = element_blank(),
-      legend.box = "horizontal",
-      legend.text = element_text(angle = 45),
-      legend.text.align = 0.8,
+      legend.text.align = 0.78,
       axis.title = element_blank(),     
       axis.ticks = element_blank(),
       axis.text = element_blank())   
@@ -258,7 +255,7 @@ figure <- ggarrange(map_2021, map_2022,
                     ncol = 2, nrow = 1,
                     label.x = 0.5)
 
-ggsave("2021-2022-hemp-survey-map.png", width = 9, height = 6, units = "in", dpi = 300)
+ggsave("2021-2022-hemp-survey-map.png", width = 9, height = 6, units = "in", dpi = 600)
 ```
 
 I then tidyed the figure up in powerpoint. 
