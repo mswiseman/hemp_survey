@@ -274,7 +274,7 @@ library(Matrix)
 
 ```r
 # Read the data into a data frame
-data <- read.csv("C:\\Users\\david.gent\\Desktop\\Data_PM.csv")
+data <- read.csv("/data/glmm_data.csv")
 ```
 
 ```r
@@ -356,7 +356,7 @@ library(dplyr)
 ```
 
 ```
-PM = read_xlsx("Data_PM_Manuscript_04032023_2.xlsx", sheet = "Both-Master")
+PM = read_xlsx("data/Data_PM_Manuscript_04032023_2.xlsx", sheet = "Both-Master")
 ```
 
 ```
