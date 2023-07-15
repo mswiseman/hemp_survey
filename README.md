@@ -4,9 +4,6 @@
 
 Load necessary packages
 
-
-
-
 ```r
 # Update: `library(USAboundariesData)` is no longer supported by CRAN; however, you can download it using remotes:
 # install.packages("remotes")
@@ -30,7 +27,8 @@ Load data
 **Note: all of the coordinates have been heavily jittered to provide collaborating growers some anonimity.**
 
 ```r
-summary_data <- read_csv("forpub.csv")
+summary_data <- read_csv("/data/map_data.csv")
+glmm_data <- read_csv("/data/glmm_data.csv")
 ```
 
 Base map
@@ -266,3 +264,131 @@ ggsave("2021-2022-hemp-survey-map.png", width = 9, height = 6, units = "in", dpi
 I then tidyed the figure up in powerpoint. 
 
 ![map figure](images/Picture1.png)
+
+# GLMM
+
+```r
+# Load the required libraries
+library(lme4)
+library(lsmeans)
+library(Matrix)
+
+```
+
+```r
+# Read the data into a data frame
+data <- read.csv("C:\\Users\\david.gent\\Desktop\\Data_PM.csv")
+```
+
+```r
+#Define incidence 
+Data_PM$Incidence <- Data_PM$PowderyMildew / 10
+Trials <- 10
+
+#Convert the numeric code for SampleStage to a categorical variable
+Data_PM$Stage <- as.factor(Data_PM$SampleStage)
+
+# Subset the data for State = 'OR' and Year = 2021 or 2022
+data1 <- subset(Data_PM, State == 'OR' & Year == 2021)
+data2 <- subset(Data_PM, State == 'OR' & Year == 2022)
+
+# Specify the GLMM formula
+
+# + (1 | Stage:FieldName) 
+# + (1 |Plant) + (1 | FieldName:Stage) 
+
+# Fit the GLM using the glm function; Fit a GLMM using glmer function and specify random terms
+model <- glm(cbind(PowderyMildew, Trials - PowderyMildew) ~ Stage, data = data1, family = binomial)
+
+# Check if the covariance matrix is positive definite when fitting GLMM with random terms
+# cov_matrix <- as.matrix(VarCorr(model)$fieldName
+# eigenvalues <- eigen(cov_matrix)$values
+# is_positive_definite <- all(eigenvalues > 0)
+# if (is_positive_definite) {
+#  cat("The matrix is positive definite.")
+# } else {
+#  cat("The matrix is not positive definite.")
+# }
+
+# Compute the confidence intervals for LSMeans
+summary(model)
+lsmeans(model, "Stage", type = "response", lsmeans_options = list(adjust
+= "none"))
+
+# Perform pairwise comparisons with lsadjustments using pairs()
+lsmeans <- lsmeans(model, ~Stage)
+contrasts <- contrast(lsmeans, method = "pairwise", adjust = "none")
+print(contrasts)
+
+# Residual diagnostic plots 
+plot(model, which = 1)
+
+# OR in 2022
+model2 <- glm(cbind(PowderyMildew, Trials - PowderyMildew) ~ Stage, data = data1, family = binomial)
+
+# Check if the covariance matrix is positive definite when fitting GLMM with random terms
+# cov_matrix <- as.matrix(VarCorr(model)$fieldName
+# eigenvalues <- eigen(cov_matrix)$values
+# is_positive_definite <- all(eigenvalues > 0)
+# if (is_positive_definite) {
+#  cat("The matrix is positive definite.")
+# } else {
+#  cat("The matrix is not positive definite.")
+# }
+
+# Compute the confidence intervals for LSMeans
+summary(model2)
+lsmeans(model2, "Stage", type = "response", lsmeans_options = list(adjust
+= "none"))
+
+# Perform pairwise comparisons with lsadjustments using pairs()
+lsmeans <- lsmeans(model2, ~Stage)
+contrasts <- contrast(lsmeans, method = "pairwise", adjust = "none")
+print(contrasts)
+
+# Residual diagnostic plots 
+plot(model2, which = 1)
+```
+
+# Summary table
+
+```
+# Load libraries
+library(readxl)
+library(dplyr)
+```
+
+```
+PM = read_xlsx("Data_PM_Manuscript_04032023_2.xlsx", sheet = "Both-Master")
+```
+
+```
+#head(PM)
+PM$Cultivar=factor(PM$Cultivar)
+PM2 = na.omit(PM)
+PM2$SampleStage = factor(PM2$SampleStage)
+PM2$FieldName = factor(PM2$FieldName)
+PM2$Transect = factor(PM2$Transect)
+PM2$Year = factor(PM2$Year)
+PM2$State = factor(PM2$State)
+PM2$county = factor(PM2$county)
+
+PMSummary = summarise(group_by(PM2, Year, State, county, FieldName, Transect, SampleStage),
+                  Plant = n(),
+                  sumPM = sum(PowderyMildew),
+                  avgPM = mean(PowderyMildew))
+PMSummary2 = summarise(group_by(PM2, Year, State, county, FieldName),
+                       Plant = n(),
+                       sumPM = sum(PowderyMildew),
+                       avgPM = mean(PowderyMildew))
+PMSummary3 = summarise(group_by(PM2, Year, State),
+                       Plant = n(),
+                       sumPM = sum(PowderyMildew),
+                       avgPM = mean(PowderyMildew))
+PMSummary4 = summarise(group_by(PM2, Year, State, SampleStage),
+                       Plant = n(),
+                       sumPM = sum(PowderyMildew),
+                       avgPM = mean(PowderyMildew))
+
+
+```
