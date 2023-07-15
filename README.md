@@ -109,11 +109,9 @@ hop_county_harvest <- tidyUSDA::getQuickstat(
 hop_county_harvest <- hop_county_harvest %>%
   drop_na(Value)
 
-# need to rename a column for later
-q <- colnames(hop_county_harvest)
-q[1] <- "fips"
-colnames(hop_county_harvest) <- q
-hop_county_harvest$fips <- as.integer(hop_county_harvest$fips)
+# add hectares column
+hop_county_harvest$hectares <- hop_county_harvest$Value * 0.404686
+
 ```
 
 
@@ -161,7 +159,7 @@ map_2021 <- ggmap(stamen_county_map) +
   coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
   geom_sf(data = counties_spec_3857, inherit.aes = FALSE, fill = NA, color = "gray90") +
   geom_sf(data = hop_county_harvest,   
-          aes(fill = as.numeric(Value*0.404686),   # convert to hectares
+          aes(fill = as.numeric(hectares),   
        geometry = geometry), inherit.aes = FALSE) +
   scale_fill_viridis_c()+
   scale_fill_gradient("2017 County Data\n for Acres of Hops Harvested", 
@@ -209,7 +207,7 @@ map_2022 <-ggmap(stamen_county_map) +
   coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
   geom_sf(data = counties_spec_3857, inherit.aes = FALSE, fill = NA, color = "gray90") +
   geom_sf(data = hop_county_harvest,   
-          aes(fill = as.numeric(Value*0.404686),   # convert to hectares
+          aes(fill = as.numeric(hectares),
        geometry = geometry), inherit.aes = FALSE) +
   scale_fill_viridis_c()+
   scale_fill_gradient("2017 County Data\n for Acres of Hops Harvested", 
