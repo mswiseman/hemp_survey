@@ -260,7 +260,7 @@ ggsave("2021-2022-hemp-survey-map.png", width = 9, height = 6, units = "in", dpi
 
 I then tidyed the figure up in powerpoint. 
 
-![map figure](images/Picture1.png)
+![map figure](images/Figure1.png)
 
 # GLMM
 
