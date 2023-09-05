@@ -155,7 +155,8 @@ Full map
 # Map for 2021
 map_2021 <- ggmap(stamen_county_map) + 
   coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
-  geom_sf(data = counties_spec_3857, inherit.aes = FALSE, fill = NA, color = "gray90") +
+  geom_sf(data = counties_spec_3857, aes(geometry=geometry), inherit.aes = FALSE, fill = NA, color = "gray90", lwd=0.25) +
+    geom_sf(data=OR_WA_2, aes(geometry=geometry), inherit.aes = FALSE, color = "black", lwd=0.5, fill = NA) +
   geom_sf(data = hop_county_harvest,   
           aes(fill = as.numeric(hectares),   
        geometry = geometry), inherit.aes = FALSE) +
@@ -167,8 +168,8 @@ map_2021 <- ggmap(stamen_county_map) +
                       na.value = "grey90",
                       trans="log",
                       guide = "colourbar",
-                      breaks = c(5, 50, 500, 5000,
-                      aesthetics = "fill"))  +
+                      breaks = c(5, 50, 500, 5000),
+                      aesthetics = "fill")  +
   new_scale_fill() +
   geom_sf(data = negative_2021_sf,
           colour = "black",
@@ -193,30 +194,31 @@ map_2021 <- ggmap(stamen_county_map) +
           shape = 21,
           alpha = 0.8,
           inherit.aes = FALSE) +
-  theme(legend.key=element_blank(),        
-        legend.position = "right",
+  theme(legend.key=element_blank(),
+        legend.position="none",
         axis.title = element_blank(),     
         axis.ticks = element_blank(),
         axis.text = element_blank())        
 
 
 # Map for 2022
-map_2022 <-ggmap(stamen_county_map) + 
+map_2022 <- ggmap(stamen_county_map) + 
   coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
-  geom_sf(data = counties_spec_3857, inherit.aes = FALSE, fill = NA, color = "gray90") +
+  geom_sf(data = counties_spec_3857, aes(geometry=geometry), inherit.aes = FALSE, fill = NA, color = "gray90", lwd=0.25) +
+    geom_sf(data=OR_WA_2, aes(geometry=geometry), inherit.aes = FALSE, color = "black", lwd=0.5, fill = NA) +
   geom_sf(data = hop_county_harvest,   
-          aes(fill = as.numeric(hectares),
+          aes(fill = as.numeric(hectares),   
        geometry = geometry), inherit.aes = FALSE) +
   scale_fill_viridis_c()+
-  scale_fill_gradient("2017 County Data\n for Acres of Hops Harvested", 
+  scale_fill_gradient(name = "Hops Harvested\n(Hectares)", 
                       low = "#F3F3F3",
                       high = "#5a5a5a",
                       space = "Lab",
                       na.value = "grey90",
                       trans="log",
                       guide = "colourbar",
-                      breaks = c(5, 50, 500, 5000,
-                      aesthetics = "fill"))  +
+                      breaks = c(5, 50, 500, 5000),
+                      aesthetics = "fill")  +
   new_scale_fill() +
   geom_sf(data = negative_2022_sf,
           colour = "black",
@@ -226,7 +228,6 @@ map_2022 <-ggmap(stamen_county_map) +
           alpha = 0.8,
           inherit.aes = FALSE) +
   geom_sf(data = gamb_positives_2022_sf,
-          aes(geometry = geometry),
           fill = "#22A884FF",
           colour = "black",
           size = 2,
@@ -234,7 +235,6 @@ map_2022 <-ggmap(stamen_county_map) +
           alpha = 0.8,
           inherit.aes = FALSE) +
   geom_sf(data = pmac_gamb_positives_2022_sf,
-          aes(geometry = geometry),
           fill = "#FDE725FF",
           colour = "black",
           size = 2,
@@ -242,23 +242,29 @@ map_2022 <-ggmap(stamen_county_map) +
           alpha = 0.8,
           inherit.aes = FALSE) +
   theme(legend.key = element_blank(),        
-      legend.position = c(0.78, 0.15), # adjust these values as needed
-      legend.title = element_blank(),
-      legend.text.align = 0.78,
+      legend.position = c(0.78, 0.2), # adjust these values as needed
+      legend.title = element_text(size=12),
+      legend.title.align = 0.5, 
+      legend.text.align = 0.5,
+      legend.background = element_rect(color = "black"),
       axis.title = element_blank(),     
       axis.ticks = element_blank(),
       axis.text = element_blank())   
 
+
+map_2022
 
 figure <- ggarrange(map_2021, map_2022,
                     labels = c("2021", "2022"),
                     ncol = 2, nrow = 1,
                     label.x = 0.5)
 
-ggsave("2021-2022-hemp-survey-map.png", width = 9, height = 6, units = "in", dpi = 600)
+figure
+
+ggsave("2021-2022-hemp-survey-map.tiff", width = 9, height = 6, units = "in", dpi = 600)
 ```
 
-I then tidyed the figure up in powerpoint. 
+I then tidyed the figure up in photoshop. 
 
 ![map figure](images/Figure1.png)
 
