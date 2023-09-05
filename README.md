@@ -266,7 +266,7 @@ ggsave("2021-2022-hemp-survey-map.tiff", width = 9, height = 6, units = "in", dp
 
 I then tidyed the figure up in photoshop. 
 
-![map figure](images/Figure1.png)
+![map figure](images/Figure1a.png)
 
 # GLMM
 
